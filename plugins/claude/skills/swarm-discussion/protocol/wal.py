@@ -20,6 +20,7 @@ CLI (used by the orchestrator):
   wal.py next-id --dir D --round N                                     # max-seq+1, collision-guarded -> "rN-msg-nnn"
   wal.py resume  --dir D                                               # {round, phase, maxId, source: partial|final|none}
   wal.py load    --dir D --round N                                     # current .partial (else .json) state JSON
+  wal.py valid_discussion_id ID                                        # validate discussion id grammar
 
 Importable: max_seq(), mint_next_id(), flush(), commit(), resume_point(), load_state(), valid_discussion_id().
 Exit 0 ok, 2 usage.
@@ -147,6 +148,11 @@ def load_state(d, rnd):
     return None
 
 
+def _add_valid_discussion_id_parser(sub, name):
+    s = sub.add_parser(name)
+    s.add_argument("discussion_id")
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -157,6 +163,8 @@ def main():
         if name == "flush":
             s.add_argument("--phase", required=True)
     sub.add_parser("resume").add_argument("--dir", required=True)
+    _add_valid_discussion_id_parser(sub, "valid_discussion_id")
+    _add_valid_discussion_id_parser(sub, "valid-discussion-id")
     a = p.parse_args()
 
     if a.cmd == "flush":
@@ -171,6 +179,9 @@ def main():
         print(json.dumps(resume_point(a.dir)))
     elif a.cmd == "load":
         print(json.dumps(load_state(a.dir, a.round)))
+    elif a.cmd in ("valid_discussion_id", "valid-discussion-id"):
+        if not valid_discussion_id(a.discussion_id):
+            p.error(f"invalid discussion id: {a.discussion_id!r}")
 
 
 if __name__ == "__main__":

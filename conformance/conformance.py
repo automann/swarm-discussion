@@ -11,6 +11,7 @@ import importlib.util
 import io
 import json
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -197,6 +198,58 @@ for label, record in (("claude", claude_record), ("codex", codex_record)):
     with contextlib.redirect_stdout(io.StringIO()):
         failures = len(validate_round.validate(record))
     check(failures == 0, f"{label} record passes validate_round.py")
+
+for label, rel in (
+    ("claude", "plugins/claude/skills/swarm-discussion/protocol/wal.py"),
+    ("codex", "plugins/codex/skills/swarm-discussion/protocol/wal.py"),
+):
+    wal_cli = REPO / rel
+    for cmd in ("valid_discussion_id", "valid-discussion-id"):
+        ok = subprocess.run(
+            [sys.executable, str(wal_cli), cmd, "append-only-event-log-vs-mutable-rows"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        check(ok.returncode == 0, f"{label} wal.py {cmd} accepts safe discussion id")
+    bad = subprocess.run(
+        [sys.executable, str(wal_cli), "valid_discussion_id", "../bad"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    check(bad.returncode != 0, f"{label} wal.py valid_discussion_id rejects traversal id")
+
+spawn_order = [
+    {"agentId": "aid-schema", "persona": "schema-architect"},
+    {"agentId": "aid-ops", "persona": "ops-engineer"},
+]
+wait_result = {
+    "status": {
+        "aid-ops": {"completed": json.dumps(DECL["ops-engineer"])},
+        "aid-schema": {"completed": json.dumps(DECL["schema-architect"])},
+    },
+    "timed_out": False,
+}
+codex_protocol_collect = subprocess.run(
+    [
+        sys.executable,
+        str(REPO / "plugins/codex/skills/swarm-discussion/protocol/collect.py"),
+        "--spawn-order",
+        json.dumps(spawn_order),
+    ],
+    input=json.dumps(wait_result),
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+    text=True,
+)
+check(codex_protocol_collect.returncode == 0, "codex protocol/collect.py wrapper exits cleanly")
+if codex_protocol_collect.returncode == 0:
+    demuxed = json.loads(codex_protocol_collect.stdout)
+    check(
+        [item["persona"] for item in demuxed["results"]] == ["schema-architect", "ops-engineer"],
+        "codex protocol/collect.py preserves spawn order",
+    )
 
 shutil.rmtree("/tmp/swarm-discussion-conf-claude", ignore_errors=True)
 shutil.rmtree("/tmp/swarm-discussion-conf-codex", ignore_errors=True)

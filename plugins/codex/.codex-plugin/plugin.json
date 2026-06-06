@@ -1,6 +1,6 @@
 {
   "name": "swarm-discussion",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Exploratory multi-expert discussion for unsolved problems, on Codex: a root-thread orchestrator runs a stigmergic blackboard over ephemeral swarm-expert subagents.",
   "skills": "./skills/",
   "license": "MIT",

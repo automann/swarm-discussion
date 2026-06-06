@@ -3,6 +3,14 @@
 All notable changes to swarm-discussion. Versioning is SemVer; the on-disk data contract is versioned
 separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each plugin bundle).
 
+## [0.1.1] - 2026-06-07 - Codex helper contract fix
+
+- Added the `wal.py valid_discussion_id` CLI command required by the Codex and schema docs, plus a
+  `valid-discussion-id` alias.
+- Added a Codex `protocol/collect.py` compatibility entrypoint so runtime docs can resolve fan-in demux
+  relative to the protocol helper directory.
+- Added conformance coverage for discussion-id validation and Codex protocol collect wrapper behavior.
+
 ## [0.1.0] — 2026-06-05 — cross-platform port (Claude Code + Codex)
 
 First dual-host release. The skill is re-architected as **one shared protocol body + thin host adapters**
