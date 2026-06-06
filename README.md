@@ -51,9 +51,9 @@ Then invoke the `/swarm-discussion` command with a topic:
 You'll be shown the proposed experts and their designed tensions to confirm before the debate begins; each
 round then streams to the conversation. Results are saved under `.swarm/discussions/<id>/` in your workspace.
 
-## Install & use — Codex desktop app
+## Install & use — Codex CLI and desktop app
 
-Install the Codex bundle straight from this repo (it lives at `plugins/codex`):
+Install the Codex bundle from your terminal. The bundle lives at `plugins/codex`:
 
 ```
 npx codex-marketplace add automann/swarm-discussion/plugins/codex --plugin
@@ -63,14 +63,19 @@ npx codex-marketplace add automann/swarm-discussion/plugins/codex --plugin
   and the CLI prompts you to choose.
 - This registers the plugin in `~/.codex/config.toml`, caches it under `~/.codex/plugins/cache/`, and installs
   the bundled `swarm-discussion` skill and the generic `swarm-expert` agent.
+- Restart Codex after installing, then start a new top-level thread/session so the plugin picker and bundled
+  skill list refresh.
 
-Then, in the Codex app, start it on a **top-level thread** — type `@` and pick **swarm-discussion**, or just
+In the Codex desktop app, start it on a **top-level thread** — type `@` and pick **swarm-discussion**, or just
 ask in plain language:
 
 ```
 @ swarm-discussion — run a lightweight discussion on: append-only event log vs mutable rows
 ```
 > *"Use swarm-discussion to stress-test this decision: should we shard the database now or after launch? Go deep."*
+
+In Codex CLI, run `codex` from the workspace, use `/plugins` if you want to verify or toggle the installed
+plugin, then start a new top-level session and ask Codex to use **swarm-discussion** for your topic.
 
 Codex spawns the expert personas as subagents and writes the discussion under `.swarm/discussions/<id>/` in
 your workspace.
