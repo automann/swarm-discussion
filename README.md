@@ -76,7 +76,15 @@ the plugin's persistent data while replacing the cached plugin copy:
 
 ## Install & use — Codex CLI and desktop app
 
-Install the Codex bundle from your terminal. The bundle lives at `plugins/codex`:
+Install from the Codex marketplace manifest at `.agents/plugins/marketplace.json`. It points at the Codex
+bundle in `plugins/codex`:
+
+```
+codex plugin marketplace add automann/swarm-discussion
+codex plugin add swarm-discussion@swarm-discussion
+```
+
+The direct `npx` installer also works when you point it at the Codex bundle explicitly:
 
 ```
 npx codex-marketplace add automann/swarm-discussion/plugins/codex --plugin
@@ -189,6 +197,7 @@ It ships **no server** ("native blackboard").
 
 ```
 .claude-plugin/marketplace.json   # Claude Code marketplace entry
+.agents/plugins/marketplace.json  # Codex marketplace entry
 plugins/claude/                   # Claude Code plugin (skill + /swarm-discussion command)
 plugins/codex/                    # Codex plugin (skill + swarm-expert agent)
 conformance/                      # cross-bundle conformance test

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compatibility entrypoint for the Codex fan-in demux helper."""
+"""Compatibility entrypoint for the fan-in demux helper."""
 import importlib.util
 from pathlib import Path
 

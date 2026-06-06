@@ -31,6 +31,23 @@ jobs:
           assert "defaultPrompt" in interface or "default_prompt" in interface, "missing default prompt"
           assert not Path("plugins/codex/skills/swarm-discussion/config.sample.toml").exists()
           assert not Path("plugins/codex/config.sample.toml").exists()
+
+          codex_marketplace = json.loads(Path(".agents/plugins/marketplace.json").read_text())
+          assert codex_marketplace["name"] == "swarm-discussion"
+          codex_entries = codex_marketplace["plugins"]
+          assert len(codex_entries) == 1
+          codex_entry = codex_entries[0]
+          assert codex_entry["name"] == "swarm-discussion"
+          assert codex_entry["source"] == {"source": "local", "path": "./plugins/codex"}
+          assert codex_entry["policy"]["installation"] == "AVAILABLE"
+          assert codex_entry["policy"]["authentication"] == "ON_INSTALL"
+
+          claude_marketplace = json.loads(Path(".claude-plugin/marketplace.json").read_text())
+          claude_entries = claude_marketplace["plugins"]
+          assert len(claude_entries) == 1
+          assert claude_entries[0]["name"] == "swarm-discussion"
+          assert claude_entries[0]["source"] == "./plugins/claude"
+
           tracked = subprocess.check_output(["git", "ls-files"], text=True).splitlines()
           old_repo_name = "-".join(("swarm", "discussion", "marketplace"))
           old_temp_prefix = "-".join(("swarm", "marketplace"))
