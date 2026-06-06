@@ -16,7 +16,7 @@ First dual-host release. The skill is re-architected as **one shared protocol bo
 - **Codex bundle** (`plugins/codex/`): native-subagent orchestration, `collect.py` (the
   `multi_agent_v1.wait_agent` → spawn-order demux), generic `swarm-expert` agent, and install-only behavior.
   Both bundles default to workspace-local discussion storage under `.swarm/discussions`.
-- **Claude adapter** (`adapters/claude/`): the Teammate-transport reference mapping.
+- **Claude bundle** (`plugins/claude/`): the Teammate-transport runtime mapping.
 - **Packaged cross-adapter conformance** (`conformance/conformance.py`) + CI over the vendored bundles.
 
 ### Changed (vs. the Claude-only original)
@@ -24,6 +24,5 @@ First dual-host release. The skill is re-architected as **one shared protocol bo
 - The dead peer-to-peer "inbox" path is removed (it was never read mid-turn — stigmergy over a shared log).
 
 ### Notes
-- Strategy A ("native blackboard") was chosen over an MCP coordinator after pre-flights on the real app
-  recorded in the development repo; the MCP coordinator remains a dormant, gated fallback.
-- The development repo also keeps the full review trail and source build script that produced these bundles.
+- Strategy A ("native blackboard") was chosen over an MCP coordinator after pre-flights on the real app;
+  the MCP coordinator remains a dormant, gated fallback.

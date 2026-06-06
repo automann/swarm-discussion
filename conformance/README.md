@@ -1,7 +1,7 @@
 # Marketplace conformance
 
 This repo ships vendored Claude and Codex plugin bundles. This harness verifies the packaged bundles still
-preserve the shared protocol contract without depending on the development repo.
+preserve the shared protocol contract on their own, with no external dependencies.
 
 Run:
 

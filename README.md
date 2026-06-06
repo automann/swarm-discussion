@@ -34,8 +34,7 @@ written under the current workspace at `.swarm/discussions/<id>/`.
 The orchestrator runs on the root thread and coordinates ephemeral persona subagents over a **shared on-disk
 log** (a write-ahead log, not peer-to-peer messaging). The discussion *content* differs per host; the
 *structure* (message-id chains, the argument graph, the round-record schema) is identical — guarded by the
-bundled cross-adapter conformance test (`python3 conformance/conformance.py`). See the design docs in the
-development repo for the full rationale.
+bundled cross-adapter conformance test (`python3 conformance/conformance.py`).
 
 ## Footprint (please read before deep runs)
 
@@ -53,8 +52,7 @@ development repo for the full rationale.
 plugins/claude/                   # self-contained Claude Code plugin (skill + /swarm-discussion command)
 plugins/codex/                    # self-contained Codex plugin (skill + swarm-expert agent)
 ```
-Both bundles vendor the shared `protocol/` core; it is a build artifact — never edit it here. Changes are
-made in the development repo and re-vendored via its `build.py`.
+Both bundles vendor the shared `protocol/` core; it is a vendored build artifact — don't edit it here.
 
 ## Maintainers — before you publish
 
