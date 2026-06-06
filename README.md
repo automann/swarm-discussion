@@ -51,6 +51,29 @@ Then invoke the `/swarm-discussion` command with a topic:
 You'll be shown the proposed experts and their designed tensions to confirm before the debate begins; each
 round then streams to the conversation. Results are saved under `.swarm/discussions/<id>/` in your workspace.
 
+To upgrade the Claude Code plugin, refresh this marketplace, update the installed plugin, then reload plugins:
+
+```
+/plugin marketplace update swarm-discussion
+/plugin update swarm-discussion@swarm-discussion
+/reload-plugins
+```
+
+Check the installed version with:
+
+```
+/plugin list
+```
+
+If the version still does not change, uninstall and reinstall from the same marketplace. `--keep-data` preserves
+the plugin's persistent data while replacing the cached plugin copy:
+
+```
+/plugin uninstall swarm-discussion@swarm-discussion --keep-data
+/plugin install swarm-discussion@swarm-discussion
+/reload-plugins
+```
+
 ## Install & use — Codex CLI and desktop app
 
 Install the Codex bundle from your terminal. The bundle lives at `plugins/codex`:
@@ -65,6 +88,26 @@ npx codex-marketplace add automann/swarm-discussion/plugins/codex --plugin
   the bundled `swarm-discussion` skill and the generic `swarm-expert` agent.
 - Restart Codex after installing, then start a new top-level thread/session so the plugin picker and bundled
   skill list refresh.
+
+To upgrade the Codex plugin, rerun the same install command with the same scope you used originally:
+
+```
+npx codex-marketplace add automann/swarm-discussion/plugins/codex --plugin --global
+```
+
+Use `--project` instead of `--global` when the plugin was installed only for the current project. Then verify
+the installed version and restart Codex:
+
+```
+codex plugin list | rg swarm-discussion
+```
+
+If the version still does not change, remove the old install from the same scope and install it again:
+
+```
+npx codex-marketplace remove swarm-discussion --plugin --global
+npx codex-marketplace add automann/swarm-discussion/plugins/codex --plugin --global
+```
 
 In the Codex desktop app, start it on a **top-level thread** — type `@` and pick **swarm-discussion**, or just
 ask in plain language:
