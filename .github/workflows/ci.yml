@@ -1,0 +1,74 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Compile vendored helpers
+        run: find plugins -path '*/protocol/*.py' -print -exec python3 -m py_compile {} \;
+      - name: Marketplace package invariants
+        run: |
+          python3 - <<'PY'
+          import json
+          import subprocess
+          from pathlib import Path
+
+          codex = json.loads(Path("plugins/codex/.codex-plugin/plugin.json").read_text())
+          for key in ("name", "version", "description", "skills", "author", "interface"):
+              assert key in codex, f"missing Codex plugin.json key: {key}"
+          interface = codex["interface"]
+          for key in ("displayName", "shortDescription", "longDescription", "developerName", "category", "capabilities"):
+              assert key in interface, f"missing Codex interface key: {key}"
+          assert "defaultPrompt" in interface or "default_prompt" in interface, "missing default prompt"
+          assert not Path("plugins/codex/skills/swarm-discussion/config.sample.toml").exists()
+          assert not Path("plugins/codex/config.sample.toml").exists()
+          tracked = subprocess.check_output(["git", "ls-files"], text=True).splitlines()
+          old_repo_name = "-".join(("swarm", "discussion", "marketplace"))
+          old_temp_prefix = "-".join(("swarm", "marketplace"))
+          for file_name in tracked:
+              path = Path(file_name)
+              assert path.name != ".DS_Store", f"tracked macOS metadata file: {path}"
+              assert "__pycache__" not in path.parts, f"tracked Python cache file: {path}"
+              assert path.suffix != ".pyc", f"tracked Python bytecode file: {path}"
+              text = path.read_text(errors="ignore")
+              assert old_repo_name not in text, f"old repo name in {path}"
+              assert old_temp_prefix not in text, f"old temp/repo prefix in {path}"
+          forbidden = tuple(f"~/{name}/discussions" for name in (".claude", ".swarm"))
+          checked = [
+              Path("README.md"),
+              Path("CHANGELOG.md"),
+              Path(".github/workflows/ci.yml"),
+              *Path("plugins").glob("**/*.md"),
+          ]
+          for path in checked:
+              text = path.read_text()
+              for needle in forbidden:
+                  assert needle not in text, f"user-scoped discussion root in {path}: {needle}"
+          for host in ("claude", "codex"):
+              schema = Path(f"plugins/{host}/skills/swarm-discussion/protocol/SCHEMA.md").read_text()
+              assert "**`schemaVersion`: `2`**" in schema, f"{host} schemaVersion drift"
+              assert "Default `discussionsRoot`: `./.swarm/discussions`." in schema
+
+          runtime_forbidden = {
+              "claude": ("Claude", "Codex", "adapter", "host", "host-neutral", "host-agnostic", "both hosts", "both adapters", "per-host", "per-adapter"),
+              "codex": ("Claude", "Codex", "Teammate", "adapter", "host", "host-neutral", "host-agnostic", "both hosts", "both adapters", "per-host", "per-adapter"),
+          }
+          for host, needles in runtime_forbidden.items():
+              root = Path(f"plugins/{host}/skills/swarm-discussion")
+              for path in [*root.glob("**/*.md"), *root.glob("**/*.py")]:
+                  text = path.read_text()
+                  haystack = text.lower()
+                  for needle in needles:
+                      assert needle.lower() not in haystack, f"runtime-facing cross-host wording in {path}: {needle}"
+          PY
+      - name: Cross-bundle conformance
+        run: python3 conformance/conformance.py

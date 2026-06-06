@@ -1,0 +1,27 @@
+{
+  "name": "swarm-discussion",
+  "version": "0.1.0",
+  "description": "Exploratory multi-expert discussion for unsolved problems, on Codex: a root-thread orchestrator runs a stigmergic blackboard over ephemeral swarm-expert subagents.",
+  "skills": "./skills/",
+  "license": "MIT",
+  "author": {
+    "name": "automann",
+    "url": "https://github.com/automann"
+  },
+  "homepage": "https://github.com/automann/swarm-discussion",
+  "repository": "https://github.com/automann/swarm-discussion",
+  "keywords": ["discussion", "multi-agent", "architecture", "decision-making", "review"],
+  "interface": {
+    "displayName": "Swarm Discussion",
+    "shortDescription": "Run structured multi-expert debates in Codex.",
+    "longDescription": "Exploratory multi-expert discussion for unresolved decisions. A root-thread orchestrator spawns ephemeral expert personas, preserves a shared write-ahead log, tracks argument references and position shifts, then synthesizes traceable conclusions.",
+    "developerName": "automann",
+    "category": "Productivity",
+    "capabilities": ["Interactive", "Write"],
+    "defaultPrompt": [
+      "Use swarm-discussion to stress-test this decision.",
+      "Run a lightweight swarm discussion on this tradeoff.",
+      "Compare the strongest arguments for this architecture."
+    ]
+  }
+}
