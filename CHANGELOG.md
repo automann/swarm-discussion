@@ -3,6 +3,16 @@
 All notable changes to swarm-discussion. Versioning is SemVer; the on-disk data contract is versioned
 separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each plugin bundle).
 
+## [0.1.2] - 2026-06-07 - Claude Code helper path resolution
+
+- Claude Code bundle: read protocol docs and invoke vendored helpers via the `${CLAUDE_SKILL_DIR}` plugin
+  variable instead of workspace-relative paths, so `/swarm-discussion` resolves `protocol/wal.py`,
+  `window.py`, `validate_round.py`, and the protocol docs regardless of the user's working directory.
+- Added the discussion-id validation step to the Claude Code `spawnTeam` mapping, for parity with the schema
+  and the other bundle.
+- CI: allow the `${CLAUDE_SKILL_DIR}` / `${CLAUDE_PLUGIN_ROOT}` runtime path variables in the runtime-wording
+  invariant (they are required path tokens, not cross-host prose).
+
 ## [0.1.1] - 2026-06-07 - Codex helper contract fix
 
 - Added the `wal.py valid_discussion_id` CLI command required by the Codex and schema docs, plus a
