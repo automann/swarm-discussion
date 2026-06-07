@@ -16,11 +16,13 @@ rounds/{NNN}.json        # committed round record (see below)
 rounds/{NNN}.json.partial# in-flight round (write-ahead log; durability.md)
 artifacts/              # synthesis.json/.md, open-questions.md, argument-graph.json, position-evolution.md
 context/summary.md      # resume context
+tmp/                    # transient scratch (helper payloads piped to wal.py/window.py); safe to delete
 ```
 
 **Default `discussionsRoot`: `./.swarm/discussions`.** Discussion artifacts belong to the project by default,
 so plugin install is enough and no user-scope config is required. This is workspace-local rather than
-worktree-proof; do not rely on it after deleting a transient worktree.
+worktree-proof; do not rely on it after deleting a transient worktree. **All writes — including transient
+scratch — stay under `{discussionsRoot}/{id}/`: build helper payloads in `{id}/tmp/`, never user-scope `/tmp`.**
 
 ## Round record — `rounds/{NNN}.json`
 

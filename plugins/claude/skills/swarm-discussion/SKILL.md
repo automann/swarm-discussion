@@ -37,20 +37,20 @@ persona, phase task, and windowed slice go in the spawn `prompt`, and the agent 
 
 | Seam method | Implementation |
 |---|---|
-| `spawnTeam(id)` | assert `python3 "${CLAUDE_SKILL_DIR}/protocol/wal.py" valid_discussion_id {id}`, then `mkdir -p .swarm/discussions/{id}/rounds` |
+| `spawnTeam(id)` | assert `python3 "${CLAUDE_SKILL_DIR}/protocol/wal.py" valid_discussion_id {id}`, then `mkdir -p .swarm/discussions/{id}/{rounds,tmp}` |
 | `spawnPersona(name, prompt, {bg})` | `Agent({subagent_type:"swarm-discussion:swarm-expert", description:name, prompt, run_in_background:bg})` — spawn a step's personas in parallel |
 | `collectResult(name)` | take the spawned agent's returned final message and parse its JSON, bound in `getDynamicExperts` spawn order. If the reply is not pure JSON, extract the first `{…}` object before falling back to a re-spawn. |
 | `postToLog(entry)` | append to the in-memory round |
 | `checkpoint(round, state, commit?)` | `python3 "${CLAUDE_SKILL_DIR}/protocol/wal.py" flush --dir .swarm/discussions/{id} --round N --phase P` (state on stdin) after every message-producing step; `commit:true` ⇒ flush the final state, then the same helper's `commit` (flush before commit). Seed the id counter from its `max-seq` at step entry. |
-| `teardown()` | no-op (persona agents are ephemeral); set `manifest.status`. |
+| `teardown()` | no-op (persona agents are ephemeral); set `manifest.status`; remove the `{id}/tmp/` scratch dir. |
 
 Per-persona windowing and the provenance gate run as
 `python3 "${CLAUDE_SKILL_DIR}/protocol/window.py" slice|provenance`. Validate a **committed** round with
 `python3 "${CLAUDE_SKILL_DIR}/protocol/validate_round.py" .swarm/discussions/{id}/rounds/NNN.json` — never the
 in-flight `.partial` (different shape; it reports failures).
 
-**Execution notes:** feed helpers their JSON via a temp file and pipe it (e.g. `< /tmp/swarm-state.json`) — do
-not embed a JSON literal directly in the Bash command (it breaks shell quoting); and Read any
-artifact / `manifest.json` before you Write or Edit it.
+**Execution notes:** feed helpers their JSON via a temp file **inside the discussion dir** and pipe it (e.g.
+`< .swarm/discussions/{id}/tmp/state.json`) — never user-scope `/tmp`, and never embed a JSON literal directly
+in the Bash command (it breaks shell quoting). Read any artifact / `manifest.json` before you Write or Edit it.
 
 Anything beyond this mapping belongs in the protocol docs, not here.

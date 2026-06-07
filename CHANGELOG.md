@@ -3,6 +3,13 @@
 All notable changes to swarm-discussion. Versioning is SemVer; the on-disk data contract is versioned
 separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each plugin bundle).
 
+## [0.1.8] - 2026-06-08 - scratch under the discussion dir (M2)
+
+- Transient helper payloads (the JSON piped to `wal.py`/`window.py`) now live under
+  `{discussionsRoot}/{id}/tmp/` instead of user-scope `/tmp` — created at `spawnTeam`, removed at `teardown`.
+  Keeps every write inside the discussion dir (no `/tmp` collisions between concurrent discussions). SKILL.md
+  execution note + SCHEMA.md layout updated. Claude → 0.1.8, Codex → 0.1.3 (shared SCHEMA.md re-synced).
+
 ## [0.1.7] - 2026-06-08 - shared core: deterministic termination + manifest schema (M3/M4)
 
 - **M3:** PROTOCOL.md Phase 4 now ALWAYS writes `context/summary.md` (resume context) — on completion and on a
