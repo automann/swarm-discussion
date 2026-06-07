@@ -3,6 +3,16 @@
 All notable changes to swarm-discussion. Versioning is SemVer; the on-disk data contract is versioned
 separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each plugin bundle).
 
+## [0.1.3] - 2026-06-08 - Claude Code: dedicated swarm-expert agent + real tool mapping
+
+- Added a bundled `swarm-expert` agent (`plugins/claude/agents/swarm-expert.md`); personas now spawn via
+  `Agent(subagent_type:"swarm-discussion:swarm-expert")` instead of `general-purpose`. The agent carries the
+  "embody the persona, cite only provided IDs, return ONLY the requested JSON" contract, removing the
+  output-conformance re-spawns observed in testing. (The `Read` tool is retained for future needs.)
+- Rewrote the Claude runtime mapping to the actual tool surface — `Agent` for spawn, the returned message for
+  collect, `mkdir` for team setup — retiring the stale `Teammate` / `Task` / `collectStatement` references.
+- Added a tolerant-parse step (extract the first JSON object) so a non-pure-JSON reply doesn't force a re-spawn.
+
 ## [0.1.2] - 2026-06-07 - Claude Code helper path resolution
 
 - Claude Code bundle: read protocol docs and invoke vendored helpers via the `${CLAUDE_SKILL_DIR}` plugin
