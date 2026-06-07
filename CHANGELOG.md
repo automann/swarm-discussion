@@ -3,6 +3,13 @@
 All notable changes to swarm-discussion. Versioning is SemVer; the on-disk data contract is versioned
 separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each plugin bundle).
 
+## [0.1.5] - 2026-06-08 - Claude Code: orchestration hardening (R3)
+
+- SKILL.md execution notes: feed bundled helpers their JSON via a temp file (not an inline Bash literal —
+  avoids shell-quoting failures), Read before Write/Edit, and validate only the committed `rounds/NNN.json`,
+  never the in-flight `.partial`. Addresses the three self-recovered orchestration soft-errors observed in the
+  0.1.3 run (`e99c5228`).
+
 ## [0.1.4] - 2026-06-08 - Claude Code: consume the injected ${CLAUDE_SKILL_DIR}
 
 - SKILL.md now directs the orchestrator to confirm (`echo`) and use the injected `${CLAUDE_SKILL_DIR}` for all

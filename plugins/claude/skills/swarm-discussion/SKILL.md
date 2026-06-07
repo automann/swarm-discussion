@@ -39,6 +39,12 @@ persona, phase task, and windowed slice go in the spawn `prompt`, and the agent 
 | `teardown()` | no-op (persona agents are ephemeral); set `manifest.status`. |
 
 Per-persona windowing and the provenance gate run as
-`python3 "${CLAUDE_SKILL_DIR}/protocol/window.py" slice|provenance`; validate a committed round with
-`python3 "${CLAUDE_SKILL_DIR}/protocol/validate_round.py" .swarm/discussions/{id}/rounds/NNN.json`.
+`python3 "${CLAUDE_SKILL_DIR}/protocol/window.py" slice|provenance`. Validate a **committed** round with
+`python3 "${CLAUDE_SKILL_DIR}/protocol/validate_round.py" .swarm/discussions/{id}/rounds/NNN.json` — never the
+in-flight `.partial` (different shape; it reports failures).
+
+**Execution notes:** feed helpers their JSON via a temp file and pipe it (e.g. `< /tmp/swarm-state.json`) — do
+not embed a JSON literal directly in the Bash command (it breaks shell quoting); and Read any
+artifact / `manifest.json` before you Write or Edit it.
+
 Anything beyond this mapping belongs in the protocol docs, not here.
