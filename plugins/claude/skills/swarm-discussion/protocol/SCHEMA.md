@@ -9,7 +9,7 @@ follow SemVer and must declare the `schemaVersion` they read/write.
 ## Directory layout — `{discussionsRoot}/{id}/`
 
 ```
-manifest.json           # id, title, mode, schemaVersion, personas, tensionMap, status, currentRound
+manifest.json           # id, title, mode, schemaVersion, personas (FULL records, not ids), tensionMap, status, currentRound
 progress.md             # live progress log (appended per step)
 personas/{persona}.json # generated persona definitions (stakes, blindSpots, …)
 rounds/{NNN}.json        # committed round record (see below)

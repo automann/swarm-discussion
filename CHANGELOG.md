@@ -3,6 +3,13 @@
 All notable changes to swarm-discussion. Versioning is SemVer; the on-disk data contract is versioned
 separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each plugin bundle).
 
+## [0.1.7] - 2026-06-08 - shared core: deterministic termination + manifest schema (M3/M4)
+
+- **M3:** PROTOCOL.md Phase 4 now ALWAYS writes `context/summary.md` (resume context) — on completion and on a
+  mid-discussion pause, every mode — instead of inconsistently skipping it.
+- **M4:** pinned `manifest.personas` to the FULL persona records (objects, not ids) in PROTOCOL.md + SCHEMA.md.
+- Shared `protocol/` change — re-synced into both bundles (Claude → 0.1.7, Codex → 0.1.2).
+
 ## [0.1.6] - 2026-06-08 - Claude Code: deterministic skill-dir resolution (C2b)
 
 - SKILL.md no longer assumes `${CLAUDE_SKILL_DIR}` is populated in Bash (the clean-install test showed it

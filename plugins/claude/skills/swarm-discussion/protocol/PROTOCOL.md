@@ -83,7 +83,7 @@ allExperts = analysis.experts ++ fixed
 AskUserQuestion("Start with these experts & tensions?", options: Start | Modify | Change Mode)   // confirmation gate
 
 write manifest.json { id, title, created, status:"active", mode, currentPhase:"initial",
-                      currentRound:0, schemaVersion, personas: allExperts,
+                      currentRound:0, schemaVersion, personas: allExperts,   // FULL persona records (objects), not just ids
                       tensionMap: analysis.tensionMap, problemDefinition: analysis.problemDefinition }
 for expert in allExperts: write personas/{expert.id}.json
 ```
@@ -205,8 +205,11 @@ write artifacts/synthesis.json, synthesis.md, open-questions.md, argument-graph.
 ## Phase 4 — Checkpoint / Termination
 
 ```
+// ALWAYS write the resume context at the end of a round — on completion AND on a mid-discussion pause,
+// every mode. Do NOT skip it: it is what makes a discussion resumable and inspectable.
 resumeContext = ask("historian", buildResumeContextPrompt(...))   // theme, progress, each expert's CURRENT position, open tensions
-write context/summary.md ; updateManifest(status:"paused", currentPhase:"checkpoint")
+write context/summary.md
+updateManifest( done ? {status:"completed", currentPhase:"synthesis"} : {status:"paused", currentPhase:"checkpoint"} )
 seam.teardown()                                                    // release any runtime resources
 
 // Resume: `wal.py resume` prefers a rounds/{NNN}.json.partial over the last completed round; `load`
