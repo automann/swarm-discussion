@@ -7,12 +7,18 @@ description: |
 
 # swarm-discussion
 
-Use this skill as the orchestrator. **The runtime sets `${CLAUDE_SKILL_DIR}` to this skill's installed
-directory and exports it to your Bash environment.** First confirm it — run `echo "${CLAUDE_SKILL_DIR}"`; it
-must print a path ending `/skills/swarm-discussion` (if it is empty, stop — the skill was not launched as an
-installed plugin). Bash runs from the user's workspace, not this dir, so invoke every bundled Python helper by
-that variable — `python3 "${CLAUDE_SKILL_DIR}/protocol/<name>.py" …` — and **never hardcode an absolute path or
-assume a source checkout**. Read the protocol docs below as skill-relative links (resolved from this dir):
+Use this skill as the orchestrator. Bundled helpers live in this skill's installed directory, but
+`${CLAUDE_SKILL_DIR}` may be **empty** in Bash — so begin every Bash block that calls a helper by resolving it,
+falling back to the installed cache:
+
+```
+export CLAUDE_SKILL_DIR="${CLAUDE_SKILL_DIR:-$(find ~/.claude/plugins/cache -type d -path '*/swarm-discussion/*/skills/swarm-discussion' 2>/dev/null | sort -V | tail -1)}"
+```
+
+`echo "${CLAUDE_SKILL_DIR}"` must then print a path ending `/skills/swarm-discussion` (if still empty, stop —
+the skill is not installed). Bash runs from the user's workspace, not this dir, so invoke every bundled helper
+by that variable — `python3 "${CLAUDE_SKILL_DIR}/protocol/<name>.py" …` — and **never hardcode an absolute
+path**. Read the protocol docs below as skill-relative links (resolved from this dir):
 
 Load and follow these, then apply the runtime mapping:
 

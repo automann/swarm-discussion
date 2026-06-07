@@ -3,6 +3,15 @@
 All notable changes to swarm-discussion. Versioning is SemVer; the on-disk data contract is versioned
 separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each plugin bundle).
 
+## [0.1.6] - 2026-06-08 - Claude Code: deterministic skill-dir resolution (C2b)
+
+- SKILL.md no longer assumes `${CLAUDE_SKILL_DIR}` is populated in Bash (the clean-install test showed it
+  empty). Each helper block now resolves it with a cache fallback —
+  `export CLAUDE_SKILL_DIR="${CLAUDE_SKILL_DIR:-$(find ~/.claude/plugins/cache … | sort -V | tail -1)}"` — so
+  resolution is deterministic instead of relying on the model to locate the install path.
+- CI: the runtime-wording invariant strips the `claude_skill_dir` / `claude_plugin_root` identifiers and the
+  `.claude/plugins` cache-path prefix (paths/vars, not cross-host prose).
+
 ## [0.1.5] - 2026-06-08 - Claude Code: orchestration hardening (R3)
 
 - SKILL.md execution notes: feed bundled helpers their JSON via a temp file (not an inline Bash literal —
