@@ -3,6 +3,14 @@
 All notable changes to swarm-discussion. Versioning is SemVer; the on-disk data contract is versioned
 separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each plugin bundle).
 
+## [0.1.4] - 2026-06-08 - Claude Code: consume the injected ${CLAUDE_SKILL_DIR}
+
+- SKILL.md now directs the orchestrator to confirm (`echo`) and use the injected `${CLAUDE_SKILL_DIR}` for all
+  bundled-helper calls, and to never hardcode an absolute path or assume a source checkout — so helpers resolve
+  from the installed location on any machine. Addresses backlog C2 (both prior live runs hardcoded the
+  source-repo path because the repo happened to be the working directory).
+- CI: the runtime-wording invariant also allows the bare `$CLAUDE_SKILL_DIR` / `$CLAUDE_PLUGIN_ROOT` forms.
+
 ## [0.1.3] - 2026-06-08 - Claude Code: dedicated swarm-expert agent + real tool mapping
 
 - Added a bundled `swarm-expert` agent (`plugins/claude/agents/swarm-expert.md`); personas now spawn via

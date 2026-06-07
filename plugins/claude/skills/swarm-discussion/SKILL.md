@@ -7,10 +7,12 @@ description: |
 
 # swarm-discussion
 
-Use this skill as the orchestrator. Bundled files sit in this skill's own directory, exported to Bash as
-**`${CLAUDE_SKILL_DIR}`**; Bash runs from the user's workspace, so reference them explicitly — read the
-protocol docs below (they are skill-relative), and run the bundled Python helpers by absolute path,
-`python3 "${CLAUDE_SKILL_DIR}/protocol/<name>.py" …`.
+Use this skill as the orchestrator. **The runtime sets `${CLAUDE_SKILL_DIR}` to this skill's installed
+directory and exports it to your Bash environment.** First confirm it — run `echo "${CLAUDE_SKILL_DIR}"`; it
+must print a path ending `/skills/swarm-discussion` (if it is empty, stop — the skill was not launched as an
+installed plugin). Bash runs from the user's workspace, not this dir, so invoke every bundled Python helper by
+that variable — `python3 "${CLAUDE_SKILL_DIR}/protocol/<name>.py" …` — and **never hardcode an absolute path or
+assume a source checkout**. Read the protocol docs below as skill-relative links (resolved from this dir):
 
 Load and follow these, then apply the runtime mapping:
 
