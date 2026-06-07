@@ -201,8 +201,12 @@ It ships **no server** ("native blackboard").
 
 ## Footprint & cost
 
-- Spawns **N persona subagents per step** (more in `standard`/`deep`) — real token/API cost. `lightweight` is
-  the cheap tier; reach for `deep` only when the decision earns it.
+- Spawns several persona subagents per round (the dynamic experts + Contrarian, plus Moderator framing). A
+  **lightweight** run is ~7–8 subagents and runs its quality gate + synthesis *inline* (a single concise
+  `synthesis.md`); `standard`/`deep` add more rounds, a Cross-Domain expert, and the full Historian synthesis
+  (5 artifacts). Real token/API cost: even lightweight runs into the low hundreds of thousands of tokens and a
+  few minutes — it's the *cheapest* tier, **not free**. Reach for it for genuine decisions, not casual queries;
+  use `deep` only when the call earns it.
 - **Writes files** under `.swarm/discussions/` in the current workspace. No network calls.
 
 ## Layout

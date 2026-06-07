@@ -167,7 +167,10 @@ function executeRound(round, roundTopic):
   seam.checkpoint(round, state)                            // flush the step boundary (a no-op flush in lightweight)
 
   // ── Step 7: Quality gate + convergence ────────────────────────────────────
-  gate = ask("moderator", buildQualityGatePrompt(allMessages, argumentGraph, positionShifts))
+  // Lightweight scores convergence INLINE (the orchestrator already holds the round — no spawn);
+  // Standard/Deep spawn the Moderator for an independent gate.
+  gate = (mode == "lightweight") ? scoreConvergence(allMessages, argumentGraph, positionShifts)   // inline, same shape
+                                 : ask("moderator", buildQualityGatePrompt(allMessages, argumentGraph, positionShifts))
   // → { qualityScore{genuineDisagreement,evidenceQuality,steelManning,novelInsights,positionEvolution,overall},
   //     summary, agreements[], activeDisagreements[], insights[], openQuestions[], recommendation, recommendationReason }
   seam.checkpoint(round, state)                            // flush the gate result before the commit
@@ -196,10 +199,15 @@ Helper `ask(role, prompt)` = `seam.spawnPersona` + `seam.collectResult` for a si
 
 ```
 allRounds = loadAllRounds(discussionId)
-final = ask("historian", buildSynthesisPrompt(allRounds, fullArgumentGraph, allPositionShifts, problemDefinition))
-// Rules: every insight cites message IDs; "resolved by argument" ≠ "resolved by majority"; confidence reflects
-// evidence quality not vote count; preserve a minority report for un-refuted dissent.
-write artifacts/synthesis.json, synthesis.md, open-questions.md, argument-graph.json, position-evolution.md
+// Lightweight synthesizes INLINE (no Historian spawn) and writes only a concise, message-id-cited synthesis.md.
+// Standard/Deep spawn the Historian for the full audited synthesis + the artifact set.
+if mode == "lightweight":
+    write artifacts/synthesis.md          // executive summary, key agreements / active disagreements, recommendation — cite message ids
+else:
+    final = ask("historian", buildSynthesisPrompt(allRounds, fullArgumentGraph, allPositionShifts, problemDefinition))
+    // Rules: every insight cites message IDs; "resolved by argument" ≠ "resolved by majority"; confidence reflects
+    // evidence quality not vote count; preserve a minority report for un-refuted dissent.
+    write artifacts/synthesis.json, synthesis.md, open-questions.md, argument-graph.json, position-evolution.md
 ```
 
 ## Phase 4 — Checkpoint / Termination
@@ -207,7 +215,8 @@ write artifacts/synthesis.json, synthesis.md, open-questions.md, argument-graph.
 ```
 // ALWAYS write the resume context at the end of a round — on completion AND on a mid-discussion pause,
 // every mode. Do NOT skip it: it is what makes a discussion resumable and inspectable.
-resumeContext = ask("historian", buildResumeContextPrompt(...))   // theme, progress, each expert's CURRENT position, open tensions
+resumeContext = (mode == "lightweight") ? composeResumeContextInline(...)         // lightweight: inline, no spawn
+                                        : ask("historian", buildResumeContextPrompt(...))   // theme, progress, current positions, open tensions
 write context/summary.md
 updateManifest( done ? {status:"completed", currentPhase:"synthesis"} : {status:"paused", currentPhase:"checkpoint"} )
 seam.teardown()                                                    // release any runtime resources

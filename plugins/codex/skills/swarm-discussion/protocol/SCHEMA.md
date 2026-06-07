@@ -14,7 +14,7 @@ progress.md             # live progress log (appended per step)
 personas/{persona}.json # generated persona definitions (stakes, blindSpots, …)
 rounds/{NNN}.json        # committed round record (see below)
 rounds/{NNN}.json.partial# in-flight round (write-ahead log; durability.md)
-artifacts/              # synthesis.json/.md, open-questions.md, argument-graph.json, position-evolution.md
+artifacts/              # Standard/Deep: synthesis.json/.md, open-questions.md, argument-graph.json, position-evolution.md — Lightweight: synthesis.md only
 context/summary.md      # resume context
 tmp/                    # transient scratch (helper payloads piped to wal.py/window.py); safe to delete
 ```

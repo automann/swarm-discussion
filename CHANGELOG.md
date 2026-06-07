@@ -3,6 +3,14 @@
 All notable changes to swarm-discussion. Versioning is SemVer; the on-disk data contract is versioned
 separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each plugin bundle).
 
+## [0.1.9] - 2026-06-08 - lighter lightweight tier (R2)
+
+- Lightweight mode now runs the quality gate, synthesis, and resume-context **inline** (orchestrator, no extra
+  subagent spawns) and writes a single concise `synthesis.md` instead of the full Historian + 5-artifact pass —
+  cutting ~3 spawns and the heaviest step per lightweight run, while keeping the multi-agent debate (independent
+  experts + Contrarian, blind declarations, position shifts) intact. Standard/Deep unchanged.
+- README footprint documents realistic cost. Shared `protocol/` re-synced to both bundles (Claude 0.1.9, Codex 0.1.4).
+
 ## [0.1.8] - 2026-06-08 - scratch under the discussion dir (M2)
 
 - Transient helper payloads (the JSON piped to `wal.py`/`window.py`) now live under
