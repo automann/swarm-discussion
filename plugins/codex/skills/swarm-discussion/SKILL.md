@@ -8,7 +8,21 @@ description: |
 
 # swarm-discussion
 
-Use this skill as the root-thread orchestrator. Load and follow the protocol docs
+Use this skill as the root-thread orchestrator. Bundled helpers live in this skill's installed directory.
+Bash runs from the user's workspace, not from this directory, so begin every Bash block that calls a helper by
+resolving the installed skill path:
+
+```
+export CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
+export SWARM_DISCUSSION_SKILL_DIR="${SWARM_DISCUSSION_SKILL_DIR:-$(find "$CODEX_HOME/plugins" "$CODEX_HOME/plugins/cache" -type f -path '*/skills/swarm-discussion/SKILL.md' 2>/dev/null | sort -V | tail -1 | sed 's#/SKILL.md$##')}"
+```
+
+`echo "$SWARM_DISCUSSION_SKILL_DIR"` must print a path ending `/skills/swarm-discussion` (if empty, stop; the
+skill is not installed). Invoke every bundled helper by that variable, e.g.
+`python3 "$SWARM_DISCUSSION_SKILL_DIR/protocol/<name>.py" ...`; never rely on the workspace cwd or hardcode an
+absolute source-checkout path.
+
+Load and follow the protocol docs
 (`protocol/PROTOCOL.md`, `SEAM.md`, `durability.md`, `windowing.md`, `SCHEMA.md`, `prompts.md`),
 then apply the runtime mapping below.
 
@@ -26,26 +40,30 @@ then apply the runtime mapping below.
 
 | Seam method | Implementation |
 |---|---|
-| `spawnTeam(id)` | assert `wal.py valid_discussion_id {id}`, then `mkdir -p .swarm/discussions/{id}/rounds` |
+| `spawnTeam(id)` | assert `python3 "$SWARM_DISCUSSION_SKILL_DIR/protocol/wal.py" valid_discussion_id {id}`, then `mkdir -p .swarm/discussions/{id}/{rounds,tmp}` |
 | `spawnPersona(name, prompt, {bg})` | spawn the `swarm-expert` subagent with the composed `prompt`; **record the returned `agent_id` against `name`** (spawn-order list) |
-| `collectResult(...)` (a step's batch) | `multi_agent_v1.wait_agent`, then `python3 protocol/collect.py --spawn-order '<[{agentId,persona,token}]>' < wait_result.json` → results in spawn order. **`wait_agent` may return a subset of completed targets even with `timed_out:false`** — poll the remaining agents, accumulate completed statuses into one map, THEN demux. `collect.py` `errors` for a not-yet-complete agent mean *poll again*; `errors`/`timedOut` after all targets are done ⇒ re-spawn. |
+| `collectResult(...)` (a step's batch) | write the accumulated `wait_agent` map to `.swarm/discussions/{id}/tmp/wait-result.json`, then `python3 "$SWARM_DISCUSSION_SKILL_DIR/protocol/collect.py" --spawn-order '<[{agentId,persona,token}]>' < .swarm/discussions/{id}/tmp/wait-result.json` → results in spawn order. **`wait_agent` may return a subset of completed targets even with `timed_out:false`** — poll the remaining agents, accumulate completed statuses into one map, THEN demux. `collect.py` `errors` for a not-yet-complete agent mean *poll again*; `errors`/`timedOut` after all targets are done ⇒ re-spawn. |
 | `postToLog(entry)` | append to the in-memory round |
-| `checkpoint(round, state, commit?)` | `python3 protocol/wal.py flush --dir .swarm/discussions/{id} --round N --phase P` (state on stdin) after every step; `commit:true` ⇒ flush the supplied final state, then `wal.py commit` (flush before commit). Seed the id counter from `wal.py max-seq`. |
-| `teardown()` | no-op (subagents are ephemeral); flip `manifest.status`. Close completed subagents between steps (agent-thread capacity). |
+| `checkpoint(round, state, commit?)` | write `state` to `.swarm/discussions/{id}/tmp/state.json`, then `python3 "$SWARM_DISCUSSION_SKILL_DIR/protocol/wal.py" flush --dir .swarm/discussions/{id} --round N --phase P < .swarm/discussions/{id}/tmp/state.json` after every step; `commit:true` ⇒ flush the supplied final state, then the same helper's `commit` (flush before commit). Seed the id counter from its `max-seq`. |
+| `teardown()` | no-op (subagents are ephemeral); flip `manifest.status`; remove `.swarm/discussions/{id}/tmp/`. Close completed subagents between steps (agent-thread capacity). |
 
 ## Orchestration recipe (per round — wraps the seam calls in PROTOCOL.md)
 
 For each spawn step (declarations / arguments / responses):
-1. `base = wal.py max-seq` → seed the in-context id counter.
-2. **Response phase only:** per persona, `proj = window.py slice --persona P --phase response` → inject
+1. `base = python3 "$SWARM_DISCUSSION_SKILL_DIR/protocol/wal.py" max-seq --dir .swarm/discussions/{id} --round N` → seed the in-context id counter.
+2. **Response phase only:** per persona, write `{"messages":[...]}` to `.swarm/discussions/{id}/tmp/messages.json`, then `proj = python3 "$SWARM_DISCUSSION_SKILL_DIR/protocol/window.py" slice --persona P --phase response < .swarm/discussions/{id}/tmp/messages.json` → inject
    `proj.sliceText`, record `proj.visibility` into `personaContextLog[P]`. (Declarations are blind;
    argumentation passes `positionDeclarations`+`moderatorOpening`, not a slice.)
 3. Spawn `swarm-expert` ×N; record each returned `agent_id` into the spawn-order list.
 4. `wait_agent` (poll + accumulate until every spawn-order agent is present) → `protocol/collect.py` demux → results in
    spawn order. Mint ids `r{N}-msg-{base+i}`; build argument-graph edges from `references`.
-5. `wal.py flush` the step.
+5. `wal.py flush` the step via a temp-file payload under `.swarm/discussions/{id}/tmp/`.
 
-After responses: run the provenance gate (`python3 protocol/window.py provenance`); any violation ⇒
+After responses: run the provenance gate (`python3 "$SWARM_DISCUSSION_SKILL_DIR/protocol/window.py" provenance`); any violation ⇒
 fail the round + re-inject. Record `positionShifts[].trigger` as the real `shiftTriggerIds` array. Round end:
 build the round record, flush it (incl. `synthesis`), then `wal.py commit`. Validate a produced round with
-`python3 protocol/validate_round.py rounds/NNN.json`.
+`python3 "$SWARM_DISCUSSION_SKILL_DIR/protocol/validate_round.py" .swarm/discussions/{id}/rounds/NNN.json`.
+
+**Execution notes:** feed helpers their JSON via temp files inside `.swarm/discussions/{id}/tmp/`; never use
+user-scope `/tmp`, and never embed JSON literals directly in shell commands. Validate only committed
+`rounds/NNN.json` records, never in-flight `.partial` files.

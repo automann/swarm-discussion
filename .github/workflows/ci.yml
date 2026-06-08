@@ -79,9 +79,15 @@ jobs:
               "claude": ("Claude", "Codex", "adapter", "host", "host-neutral", "host-agnostic", "both hosts", "both adapters", "per-host", "per-adapter"),
               "codex": ("Claude", "Codex", "Teammate", "adapter", "host", "host-neutral", "host-agnostic", "both hosts", "both adapters", "per-host", "per-adapter"),
           }
-          # Required runtime path tokens (the CLAUDE_SKILL_DIR / CLAUDE_PLUGIN_ROOT vars in any form, and the
-          # ~/.claude/plugins install-cache path) are paths/vars, not cross-host prose — strip before the check.
-          allowed_runtime_vars = ("claude_skill_dir", "claude_plugin_root", ".claude/plugins")
+          # Required runtime path tokens are paths/vars, not cross-host prose — strip before the check.
+          allowed_runtime_vars = (
+              "claude_skill_dir",
+              "claude_plugin_root",
+              ".claude/plugins",
+              "codex_home",
+              "swarm_discussion_skill_dir",
+              ".codex",
+          )
           for host, needles in runtime_forbidden.items():
               root = Path(f"plugins/{host}/skills/swarm-discussion")
               for path in [*root.glob("**/*.md"), *root.glob("**/*.py")]:

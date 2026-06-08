@@ -25,3 +25,5 @@ Persistent instructions for this skill. Keep these true; they encode correctness
 ## Filesystem
 - `discussionsRoot = ./.swarm/discussions` under the current workspace. Discussion artifacts are
   workspace-local; deleting a transient worktree deletes its local discussion artifacts too.
+- Helper payloads must be staged under `.swarm/discussions/{id}/tmp/`, never user-scope `/tmp`; remove that
+  `tmp/` directory during teardown.

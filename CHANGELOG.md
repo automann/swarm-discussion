@@ -3,6 +3,15 @@
 All notable changes to swarm-discussion. Versioning is SemVer; the on-disk data contract is versioned
 separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each plugin bundle).
 
+## [0.1.10] - 2026-06-08 - Codex bundle adapter hardening (Codex 0.1.5)
+
+- Codex SKILL.md now resolves bundled helpers from the installed skill directory before helper calls, instead
+  of relying on the workspace cwd.
+- Codex runtime mapping now creates `{rounds,tmp}`, stages helper JSON payloads under `{id}/tmp/`, removes
+  that scratch dir at teardown, and documents committed-round-only validation (`rounds/NNN.json`, never
+  `.partial`).
+- CI runtime-wording guard now strips the required Codex path variable names before checking skill files.
+
 ## [0.1.9] - 2026-06-08 - lighter lightweight tier (R2)
 
 - Lightweight mode now runs the quality gate, synthesis, and resume-context **inline** (orchestrator, no extra
