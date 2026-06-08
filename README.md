@@ -76,46 +76,88 @@ the plugin's persistent data while replacing the cached plugin copy:
 
 ## Install & use — Codex CLI and desktop app
 
-Install from the Codex marketplace manifest at `.agents/plugins/marketplace.json`. It points at the Codex
-bundle in `plugins/codex`:
+Use the wrapper installer. It installs the Codex plugin, then registers the bundled `swarm-expert.toml` as a
+Codex custom agent from the installed plugin directory.
+
+```
+npx @automann/swarm-discussion-installer install --global
+```
+
+Use a project-scoped install instead when you only want `swarm-expert` available inside one workspace:
+
+```
+cd /path/to/your/project
+npx @automann/swarm-discussion-installer install --project
+```
+
+`install` runs the native Codex commands:
 
 ```
 codex plugin marketplace add automann/swarm-discussion
 codex plugin add swarm-discussion@swarm-discussion
 ```
 
-The direct `npx` installer also works when you point it at the Codex bundle explicitly:
+Then it copies the plugin's `agents/swarm-expert.toml` template into one of Codex's custom-agent discovery
+paths:
+
+- `~/.codex/agents/swarm-expert.toml` for `--global`.
+- `./.codex/agents/swarm-expert.toml` for `--project`.
+
+Run the optional real spawn smoke test when you want to verify the full subagent path:
 
 ```
-npx codex-marketplace add automann/swarm-discussion/plugins/codex --plugin
+npx @automann/swarm-discussion-installer install --global --verify-spawn
 ```
 
-- Add `--project` to install into the current project only, or `--global` for every project — omit the flag
-  and the CLI prompts you to choose.
-- This registers the plugin in `~/.codex/config.toml`, caches it under `~/.codex/plugins/cache/`, and installs
-  the bundled `swarm-discussion` skill. The package also includes `agents/swarm-expert.toml`; see the known
-  issue below before relying on `agent_type = "swarm-expert"`.
-- Restart Codex after installing, then start a new top-level thread/session so the plugin picker and bundled
-  skill list refresh.
+After installing, restart Codex and start a new top-level thread/session so the plugin picker, bundled skill,
+and custom-agent registry refresh.
 
-To upgrade the Codex plugin, rerun the same install command with the same scope you used originally:
+Use `doctor` to inspect an existing install without changing files:
 
 ```
-npx codex-marketplace add automann/swarm-discussion/plugins/codex --plugin --global
+npx @automann/swarm-discussion-installer doctor
+npx @automann/swarm-discussion-installer doctor --verify-spawn
 ```
 
-Use `--project` instead of `--global` when the plugin was installed only for the current project. Then verify
-the installed version and restart Codex:
+To upgrade or repair Codex registration, rerun the installer with the same scope:
+
+```
+npx @automann/swarm-discussion-installer repair --global
+npx @automann/swarm-discussion-installer repair --project
+```
+
+To uninstall only the custom-agent registration file:
+
+```
+npx @automann/swarm-discussion-installer uninstall --global
+npx @automann/swarm-discussion-installer uninstall --project
+```
+
+For a clean reinstall test, remove the custom-agent registration, Codex plugin, and Codex marketplace entry:
+
+```
+npx @automann/swarm-discussion-installer uninstall --global --all
+```
+
+`--all` is destructive and does not create backups. Use `--project --all` from a project root to remove the
+project-scoped custom-agent file instead of the global one.
+
+You can still install only the Codex plugin with native Codex commands:
+
+```
+codex plugin marketplace add automann/swarm-discussion
+codex plugin add swarm-discussion@swarm-discussion
+```
+
+That plugin-only path installs the `swarm-discussion` skill and keeps `agents/swarm-expert.toml` inside the
+plugin package, but it does not by itself copy the file into `~/.codex/agents/` or `.codex/agents/`. Run
+`npx @automann/swarm-discussion-installer repair --global` or `--project` afterward if you need
+`multi_agent_v1.spawn_agent(agent_type = "swarm-expert")` to work.
+
+Verify the installed Codex plugin version with:
 
 ```
 codex plugin list | rg swarm-discussion
-```
-
-If the version still does not change, remove the old install from the same scope and install it again:
-
-```
-npx codex-marketplace remove swarm-discussion --plugin --global
-npx codex-marketplace add automann/swarm-discussion/plugins/codex --plugin --global
 ```
 
 In the Codex desktop app, start it on a **top-level thread** — type `@` and pick **swarm-discussion**, or just
@@ -136,8 +178,8 @@ your workspace.
 - Run it on the **root thread** — the orchestrator coordinates subagents and can't itself be a subagent
   (`agents.max_depth = 1`).
 - Codex needs write access to your workspace; it only ever writes under `.swarm/discussions/`.
-- To turn the plugin off without uninstalling, set its entry in `~/.codex/config.toml` to `enabled = false`
-  and restart Codex.
+- To turn the plugin off without uninstalling, disable it from Codex's plugin controls or remove it with
+  `codex plugin remove swarm-discussion@swarm-discussion`, then restart Codex.
 
 **Codex known issues**
 - The Codex app's Plugins page can still show **Swarm Discussion** after you uninstall or delete every local
@@ -145,10 +187,6 @@ your workspace.
   `.agents/plugins/marketplace.json`; the entry is catalog availability, not proof that the plugin is still
   installed. Use `codex plugin list | rg swarm-discussion` and the installed roots under `~/.codex/plugins/`
   to verify actual install state.
-- Current Codex install commands copy `agents/swarm-expert.toml` into the plugin package, but do not
-  automatically register it as a Codex custom agent for `multi_agent_v1.spawn_agent(agent_type =
-  "swarm-expert")`. This means `swarm-expert` may still report as an unknown `agent_type` after install.
-  A friendlier one-command registration flow is still an open packaging issue.
 
 ---
 
