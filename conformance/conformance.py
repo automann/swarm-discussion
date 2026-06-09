@@ -427,6 +427,26 @@ raise SystemExit(1)
         "codex runtime wrapper checks contract before each delegated gate",
     )
 
+flow_smoke = subprocess.run(
+    [sys.executable, str(REPO / "conformance/runtime_flow_smoke.py")],
+    cwd=str(REPO),
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+    text=True,
+)
+check(flow_smoke.returncode == 0, "codex runtime-backed discussion flow smoke passes")
+if flow_smoke.returncode == 0:
+    payload = json.loads(flow_smoke.stdout)
+    summary = payload["summary"]
+    check(summary["promptBuildCount"] == 2, "codex runtime flow smoke builds persona prompts")
+    check(
+        summary["partialMissingAgentIds"] == ["agent-contrarian"],
+        "codex runtime flow smoke catches partial fan-in before completion",
+    )
+    check(summary["messageIds"] == ["r1-msg-001", "r1-msg-002"], "codex runtime flow smoke mints WAL ids")
+    check(summary["adapterSmokeOk"] is True, "codex runtime flow smoke passes adapter-smoke")
+    check(summary["validateLoopOk"] is True, "codex runtime flow smoke passes validate-loop")
+
 with tempfile.TemporaryDirectory() as tmp:
     tmp_path = Path(tmp)
     prompt_out = tmp_path / "prompt"

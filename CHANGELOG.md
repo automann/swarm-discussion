@@ -11,6 +11,8 @@ separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each 
   the parent thread to hand-write standard transport files.
 - Wrapper conformance now proves the new transport helper roundtrip and requires the commands in the runtime
   contract.
+- Added an end-to-end runtime-backed flow smoke that composes `context-build`, `prompt-build`, transport
+  helpers, WAL commands, `adapter-smoke`, and `validate-loop` from an empty discussion directory.
 - Bumped the Codex bundle to `0.1.10`.
 
 ## [0.1.14] - 2026-06-10 - Codex runtime primitive handoff (Codex 0.1.9)
