@@ -16,7 +16,32 @@ It must not construct prompts, merge wait results, mint message ids, mutate WAL
 state, summarize trace/evidence health, install plugins, or manage marketplace
 state. Those behaviors belong to the runtime package or the installer.
 
-## Development Commands
+## Vendored Layout
+
+The installed Codex plugin root mirrors the runtime repository root:
+
+```text
+runtime/swarm_runtime_wrapper.py
+runtime/swarm_rt.py
+runtime/swarm/
+runtime-contract.json
+profiles/
+schemas/
+```
+
+The runtime code intentionally resolves `runtime-contract.json` and
+`profiles/` from the plugin root, so the vendored copy can stay close to the
+runtime repository layout.
+
+## Commands
+
+Check the bundled runtime from inside a plugin checkout or installed plugin:
+
+```bash
+python3 plugins/codex/runtime/swarm_runtime_wrapper.py doctor
+```
+
+## Development Override
 
 With a local runtime checkout:
 
@@ -38,6 +63,6 @@ If the runtime is installed as `swarm-rt`, the `--runtime` flag can be omitted.
 
 ## Current Status
 
-This is a skeleton. It is safe to ship because it is inert unless explicitly
-called. The live skill remains on the existing bundled helper flow until the
-runtime package is embedded or installed by the Codex installer.
+This is still a migration bridge. The live skill remains on the existing
+bundled-helper flow until the skill prompt is switched to the runtime-backed
+adapter path.

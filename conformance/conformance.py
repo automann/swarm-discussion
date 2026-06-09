@@ -253,6 +253,21 @@ if codex_protocol_collect.returncode == 0:
     )
 
 wrapper = REPO / "plugins/codex/runtime/swarm_runtime_wrapper.py"
+bundled_doctor = subprocess.run(
+    [sys.executable, str(wrapper), "doctor"],
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+    text=True,
+)
+check(bundled_doctor.returncode == 0, "codex runtime wrapper doctor accepts bundled runtime")
+if bundled_doctor.returncode == 0:
+    payload = json.loads(bundled_doctor.stdout)
+    check(payload["runtime"]["source"] == "bundled", "codex runtime wrapper defaults to bundled runtime")
+    check(
+        payload["contractSummary"]["compatibility"] == "swarm-runtime-v2-alpha",
+        "bundled runtime reports expected compatibility",
+    )
+
 with tempfile.TemporaryDirectory() as tmp:
     tmp_path = Path(tmp)
     fake_runtime = tmp_path / "fake_swarm_rt.py"

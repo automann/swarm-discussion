@@ -8,6 +8,8 @@ separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each 
 - Added an inert Codex plugin-side runtime wrapper skeleton under `plugins/codex/runtime/`. It resolves a
   compatible v2 runtime CLI, verifies `runtime-contract`, and delegates `adapter-smoke` / `validate-loop`
   without copying prompt, fan-in, WAL, trace, or evidence logic into the plugin.
+- Vendored the v2 runtime package into the Codex plugin root so production installs can use a version-coupled
+  bundled runtime instead of depending on a global `swarm-rt`.
 - Added a Codex wrapper migration plan documenting the staged path from legacy bundled-helper orchestration to
   a runtime-backed plugin flow.
 - Extended conformance coverage so the wrapper is exercised against a fake compatible runtime.

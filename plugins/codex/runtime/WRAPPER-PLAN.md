@@ -19,9 +19,9 @@ Acceptance:
 
 ## P1: Package Boundary
 
-- Decide whether the Codex plugin vendors the runtime package or depends on an
-  installed `swarm-rt` command.
-- Update the installer to verify the runtime command during install/repair.
+- Vendor the runtime package into the Codex plugin; keep external `swarm-rt`
+  only as a development override.
+- Update the installer to verify the bundled runtime during install/repair.
 - Add a smoke fixture that can be run from the installed plugin root.
 
 Acceptance:
