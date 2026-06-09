@@ -23,6 +23,7 @@ COMPATIBILITY = "swarm-runtime-v2-alpha"
 ADAPTER_SMOKE = "adapter-smoke"
 RUNTIME_CONTRACT = "runtime-contract"
 VALIDATE_LOOP = "validate-loop"
+FIXTURE_DIR = "runtime/fixtures/minimal-v2"
 
 
 def emit(payload: dict[str, Any]) -> None:
@@ -136,6 +137,10 @@ def contract_summary(payload: dict[str, Any]) -> dict[str, Any]:
     return summary if isinstance(summary, dict) else {}
 
 
+def plugin_fixture_dir() -> Path:
+    return plugin_root() / FIXTURE_DIR
+
+
 def resolve_runtime(explicit: str | None) -> dict[str, Any]:
     attempts: list[dict[str, Any]] = []
     for candidate in runtime_candidates(explicit):
@@ -179,13 +184,15 @@ def resolve_runtime(explicit: str | None) -> dict[str, Any]:
 
 def cmd_doctor(args: argparse.Namespace) -> int:
     resolved = resolve_runtime(args.runtime)
+    ok = resolved["ok"]
     payload: dict[str, Any] = {
-        "ok": resolved["ok"],
+        "ok": ok,
         "wrapper": {
             "kind": "swarm.codex_runtime_wrapper",
             "compatibility": COMPATIBILITY,
             "path": str(Path(__file__).resolve()),
             "pluginRoot": str(plugin_root()),
+            "fixtureDir": str(plugin_fixture_dir()),
         },
         "attempts": resolved["attempts"],
     }
@@ -195,10 +202,24 @@ def cmd_doctor(args: argparse.Namespace) -> int:
             "command": resolved["runtime"]["display"],
         }
         payload["contractSummary"] = contract_summary(resolved["contract"])
+        if args.smoke_fixture:
+            fixture_dir = plugin_fixture_dir()
+            smoke = run(resolved["runtime"]["command"], [ADAPTER_SMOKE, "--dir", str(fixture_dir)])
+            fixture_smoke = {
+                "ok": smoke["ok"],
+                "dir": str(fixture_dir),
+                "returncode": smoke["returncode"],
+                "summary": (smoke["json"] or {}).get("summary") if isinstance(smoke["json"], dict) else None,
+                "errors": (smoke["json"] or {}).get("errors") if isinstance(smoke["json"], dict) else None,
+                "stderr": smoke["stderr"].strip(),
+            }
+            payload["fixtureSmoke"] = fixture_smoke
+            ok = ok and fixture_smoke["ok"]
+            payload["ok"] = ok
     else:
         payload["errors"] = resolved["errors"]
     emit(payload)
-    return 0 if resolved["ok"] else 1
+    return 0 if ok else 1
 
 
 def cmd_runtime_contract(args: argparse.Namespace) -> int:
@@ -287,6 +308,11 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
 
     doctor = sub.add_parser("doctor", help="Check wrapper and runtime readiness")
+    doctor.add_argument(
+        "--smoke-fixture",
+        action="store_true",
+        help="Run adapter-smoke against the bundled minimal fixture",
+    )
     doctor.set_defaults(func=cmd_doctor)
 
     contract = sub.add_parser(RUNTIME_CONTRACT, help="Emit the runtime contract through the wrapper")

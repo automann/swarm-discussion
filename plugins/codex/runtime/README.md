@@ -24,6 +24,7 @@ The installed Codex plugin root mirrors the runtime repository root:
 runtime/swarm_runtime_wrapper.py
 runtime/swarm_rt.py
 runtime/swarm/
+runtime/fixtures/minimal-v2/
 runtime-contract.json
 profiles/
 schemas/
@@ -40,6 +41,17 @@ Check the bundled runtime from inside a plugin checkout or installed plugin:
 ```bash
 python3 plugins/codex/runtime/swarm_runtime_wrapper.py doctor
 ```
+
+Check the bundled runtime and replay the bundled minimal fixture:
+
+```bash
+python3 plugins/codex/runtime/swarm_runtime_wrapper.py doctor --smoke-fixture
+```
+
+The fixture smoke runs `adapter-smoke` against `runtime/fixtures/minimal-v2`.
+It validates host-step metadata, replays `collect-merge`, checks trace/evidence,
+and validates the smallest complete runtime loop without spawning agents or
+mutating state.
 
 ## Development Override
 

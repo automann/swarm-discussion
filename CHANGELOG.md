@@ -3,6 +3,14 @@
 All notable changes to swarm-discussion. Versioning is SemVer; the on-disk data contract is versioned
 separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each plugin bundle).
 
+## [0.1.12] - 2026-06-10 - Codex bundled fixture smoke (Codex 0.1.7)
+
+- Added a bundled minimal runtime fixture under `plugins/codex/runtime/fixtures/minimal-v2`.
+- Codex runtime wrapper `doctor --smoke-fixture` now verifies the bundled runtime contract and runs
+  `adapter-smoke` against the fixture without spawning agents or mutating state.
+- Extended conformance coverage for the bundled fixture smoke.
+- Bumped the Codex bundle to `0.1.7`.
+
 ## [0.1.11] - 2026-06-10 - Codex bundled runtime bridge (Codex 0.1.6)
 
 - Added a Codex plugin-side runtime wrapper under `plugins/codex/runtime/`. It resolves a

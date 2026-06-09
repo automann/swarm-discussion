@@ -28,6 +28,8 @@ Acceptance:
 
 - `doctor` can report plugin root, runtime root, compatibility id, and available
   integration gates from a clean install.
+- `doctor --smoke-fixture` can replay the bundled minimal fixture without
+  spawning agents.
 - Missing runtime produces a clear remediation path.
 
 ## P2: Adapter-Facing Smoke In The Plugin

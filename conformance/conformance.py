@@ -268,6 +268,21 @@ if bundled_doctor.returncode == 0:
         "bundled runtime reports expected compatibility",
     )
 
+bundled_fixture_smoke = subprocess.run(
+    [sys.executable, str(wrapper), "doctor", "--smoke-fixture"],
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+    text=True,
+)
+check(bundled_fixture_smoke.returncode == 0, "codex runtime wrapper bundled fixture smoke passes")
+if bundled_fixture_smoke.returncode == 0:
+    payload = json.loads(bundled_fixture_smoke.stdout)
+    check(payload["fixtureSmoke"]["ok"] is True, "codex runtime wrapper reports fixture smoke ok")
+    check(
+        payload["fixtureSmoke"]["summary"]["transportReplayOk"] is True,
+        "codex runtime wrapper fixture smoke replays transport",
+    )
+
 with tempfile.TemporaryDirectory() as tmp:
     tmp_path = Path(tmp)
     fake_runtime = tmp_path / "fake_swarm_rt.py"
