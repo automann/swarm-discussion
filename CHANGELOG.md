@@ -3,6 +3,15 @@
 All notable changes to swarm-discussion. Versioning is SemVer; the on-disk data contract is versioned
 separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each plugin bundle).
 
+## [0.1.14] - 2026-06-10 - Codex runtime primitive handoff (Codex 0.1.9)
+
+- Codex runtime wrapper now delegates stable runtime primitives (`context-build`, `prompt-build`,
+  `collect-merge`, `append-message`, `checkpoint`, `finalize-round`, validators, trace/evidence) in addition
+  to smoke gates.
+- Codex `SKILL.md` now instructs runtime-backed runs to use runtime prompt artifacts, runtime fan-in merge, and
+  runtime WAL message-id/checkpoint/finalization commands rather than context-minted ids and legacy WAL flushes.
+- Bumped the Codex bundle to `0.1.9`.
+
 ## [0.1.13] - 2026-06-10 - Codex runtime preflight in skill (Codex 0.1.8)
 
 - Codex `SKILL.md` now runs the bundled runtime wrapper `doctor --smoke-fixture` before discussion work starts,

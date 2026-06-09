@@ -10,7 +10,8 @@ The wrapper owns only three jobs:
 - Resolve a runtime CLI from `--runtime`, `SWARM_DISCUSSION_RUNTIME`, a future
   bundled `runtime/swarm_rt.py`, or `swarm-rt` on `PATH`.
 - Verify `runtime-contract` and the `swarm-runtime-v2-alpha` compatibility id.
-- Delegate integration gates such as `adapter-smoke` and `validate-loop`.
+- Delegate integration gates and runtime primitives such as `prompt-build`,
+  `collect-merge`, and WAL commands.
 
 It must not construct prompts, merge wait results, mint message ids, mutate WAL
 state, summarize trace/evidence health, install plugins, or manage marketplace

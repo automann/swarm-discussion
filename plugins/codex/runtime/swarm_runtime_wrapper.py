@@ -24,6 +24,21 @@ ADAPTER_SMOKE = "adapter-smoke"
 RUNTIME_CONTRACT = "runtime-contract"
 VALIDATE_LOOP = "validate-loop"
 FIXTURE_DIR = "runtime/fixtures/minimal-v2"
+PRIMITIVE_COMMANDS = [
+    "context-build",
+    "prompt-build",
+    "collect-merge",
+    "append-message",
+    "checkpoint",
+    "finalize-round",
+    "resume-plan",
+    "validate-round",
+    "validate-discussion",
+    "trace",
+    "evidence",
+    "validate-host-step",
+    "capability-doctor",
+]
 
 
 def emit(payload: dict[str, Any]) -> None:
@@ -295,6 +310,31 @@ def cmd_validate_loop(args: argparse.Namespace) -> int:
     return 0 if result["ok"] else 1
 
 
+def cmd_runtime_primitive(args: argparse.Namespace) -> int:
+    resolved = resolve_runtime(args.runtime)
+    if not resolved["ok"]:
+        emit({"ok": False, "errors": resolved["errors"], "attempts": resolved["attempts"]})
+        return 1
+
+    runtime_args = [args.runtime_command, *args.runtime_args]
+    result = run(resolved["runtime"]["command"], runtime_args)
+    emit(
+        {
+            "ok": result["ok"],
+            "wrapper": {"compatibility": COMPATIBILITY},
+            "runtime": {
+                "source": resolved["runtime"]["source"],
+                "command": resolved["runtime"]["display"],
+                "args": runtime_args,
+                "returncode": result["returncode"],
+            },
+            "result": result["json"],
+            "stderr": result["stderr"].strip(),
+        }
+    )
+    return 0 if result["ok"] else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="swarm-runtime-wrapper",
@@ -327,12 +367,42 @@ def build_parser() -> argparse.ArgumentParser:
     loop.add_argument("dir", type=Path, help="Discussion directory")
     loop.set_defaults(func=cmd_validate_loop)
 
+    for command in PRIMITIVE_COMMANDS:
+        primitive = sub.add_parser(command, help=f"Delegate runtime {command}")
+        primitive.add_argument("runtime_args", nargs=argparse.REMAINDER)
+        primitive.set_defaults(func=cmd_runtime_primitive, runtime_command=command)
+
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
+    raw = list(sys.argv[1:] if argv is None else argv)
+    runtime_override: str | None = None
+    index = 0
+    while index < len(raw):
+        item = raw[index]
+        if item == "--runtime" and index + 1 < len(raw):
+            runtime_override = raw[index + 1]
+            index += 2
+            continue
+        if item.startswith("--runtime="):
+            runtime_override = item.split("=", 1)[1]
+            index += 1
+            continue
+        break
+
+    if index < len(raw) and raw[index] in PRIMITIVE_COMMANDS:
+        args = argparse.Namespace(
+            runtime=runtime_override,
+            runtime_command=raw[index],
+            runtime_args=raw[index + 1 :],
+        )
+        return cmd_runtime_primitive(args)
+
     parser = build_parser()
-    args = parser.parse_args(argv)
+    args, unknown = parser.parse_known_args(raw)
+    if unknown:
+        parser.error(f"unrecognized arguments: {' '.join(unknown)}")
     return args.func(args)
 
 

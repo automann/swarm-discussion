@@ -296,6 +296,11 @@ check(
     "adapter-smoke --dir .swarm/discussions/{id}" in codex_skill_text,
     "codex skill documents bundled runtime transport smoke gate",
 )
+for primitive in ("prompt-build", "collect-merge", "append-message", "finalize-round"):
+    check(
+        primitive in codex_skill_text,
+        f"codex skill routes real flow through runtime {primitive}",
+    )
 
 with tempfile.TemporaryDirectory() as tmp:
     tmp_path = Path(tmp)
@@ -393,6 +398,156 @@ raise SystemExit(1)
         calls.count(["runtime-contract"]) == 3,
         "codex runtime wrapper checks contract before each delegated gate",
     )
+
+with tempfile.TemporaryDirectory() as tmp:
+    tmp_path = Path(tmp)
+    prompt_out = tmp_path / "prompt"
+    prompt = subprocess.run(
+        [
+            sys.executable,
+            str(wrapper),
+            "prompt-build",
+            "--request",
+            str(REPO / "plugins/codex/runtime/fixtures/minimal-v2/prompts/r001/response/architect/request.json"),
+            "--out-dir",
+            str(prompt_out),
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    check(prompt.returncode == 0, "codex runtime wrapper delegates prompt-build primitive")
+    if prompt.returncode == 0:
+        payload = json.loads(prompt.stdout)
+        check(payload["result"]["ok"] is True, "codex runtime wrapper prompt-build result ok")
+        check((prompt_out / "prompt.txt").exists(), "codex runtime wrapper prompt-build writes prompt artifact")
+
+    collect_merge = subprocess.run(
+        [
+            sys.executable,
+            str(wrapper),
+            "collect-merge",
+            "--spawn-order",
+            str(REPO / "plugins/codex/runtime/fixtures/minimal-v2/transport/r001/response/spawn-order.json"),
+            "--wait-result",
+            str(REPO / "plugins/codex/runtime/fixtures/minimal-v2/transport/r001/response/wait-batches.jsonl"),
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    check(collect_merge.returncode == 0, "codex runtime wrapper delegates collect-merge primitive")
+    if collect_merge.returncode == 0:
+        payload = json.loads(collect_merge.stdout)
+        check(payload["result"]["complete"] is True, "codex runtime wrapper collect-merge completes fixture fan-in")
+
+    discussion_dir = tmp_path / "discussion"
+    message1 = tmp_path / "message1.json"
+    message1.write_text(
+        json.dumps(
+            {
+                "from": "architect",
+                "type": "position_declaration",
+                "content": {"summary": "Use runtime WAL."},
+                "references": [],
+            }
+        )
+    )
+    append1 = subprocess.run(
+        [
+            sys.executable,
+            str(wrapper),
+            "append-message",
+            "--dir",
+            str(discussion_dir),
+            "--round",
+            "1",
+            "--phase",
+            "declaration",
+            "--message",
+            str(message1),
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    check(append1.returncode == 0, "codex runtime wrapper delegates append-message primitive")
+    if append1.returncode == 0:
+        payload = json.loads(append1.stdout)
+        check(
+            payload["result"]["message"]["id"] == "r1-msg-001",
+            "codex runtime wrapper append-message mints first id",
+        )
+
+    message2 = tmp_path / "message2.json"
+    message2.write_text(
+        json.dumps(
+            {
+                "from": "contrarian",
+                "type": "argument",
+                "content": {"summary": "Probe the WAL boundary."},
+                "references": [{"targetId": "r1-msg-001", "relation": "questions"}],
+            }
+        )
+    )
+    append2 = subprocess.run(
+        [
+            sys.executable,
+            str(wrapper),
+            "append-message",
+            "--dir",
+            str(discussion_dir),
+            "--round",
+            "1",
+            "--phase",
+            "argumentation",
+            "--message",
+            str(message2),
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    check(append2.returncode == 0, "codex runtime wrapper append-message accepts references")
+
+    if append2.returncode == 0:
+        state = json.loads((discussion_dir / "rounds/001.json.partial").read_text())
+        state.update(
+            {
+                "topic": "Wrapper WAL smoke",
+                "mode": "lightweight",
+                "timestamp": "2026-06-10T00:00:00Z",
+                "synthesis": {"qualityScore": {"overall": 4}, "recommendation": "continue"},
+                "metadata": {
+                    "messageCount": len(state["messages"]),
+                    "participants": ["architect", "contrarian"],
+                    "referenceCount": len(state["argumentGraph"]),
+                },
+            }
+        )
+        final_state = tmp_path / "final.json"
+        final_state.write_text(json.dumps(state, indent=2, sort_keys=True) + "\n")
+        finalize = subprocess.run(
+            [
+                sys.executable,
+                str(wrapper),
+                "finalize-round",
+                "--dir",
+                str(discussion_dir),
+                "--round",
+                "1",
+                "--state",
+                str(final_state),
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        check(finalize.returncode == 0, "codex runtime wrapper delegates finalize-round primitive")
+        if finalize.returncode == 0:
+            payload = json.loads(finalize.stdout)
+            check(payload["result"]["ok"] is True, "codex runtime wrapper finalize-round result ok")
+            check((discussion_dir / "rounds/001.json").exists(), "codex runtime wrapper finalize-round commits")
 
 shutil.rmtree("/tmp/swarm-discussion-conf-claude", ignore_errors=True)
 shutil.rmtree("/tmp/swarm-discussion-conf-codex", ignore_errors=True)
