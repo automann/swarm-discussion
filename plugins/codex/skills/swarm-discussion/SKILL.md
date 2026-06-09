@@ -42,9 +42,9 @@ then apply the runtime mapping below.
   spawns personas. The user invokes the skill at top level.
 - `discussionsRoot = ./.swarm/discussions` under the current workspace. Discussions are workspace-local; if a
   worktree is deleted, its local discussion artifacts are deleted with it.
-- Personas are not per-name agent files: spawn the single generic `agents/swarm-expert.toml` and inject the
-  persona + phase task + (response phase) windowed slice in the prompt. The spawn prompt must ask the persona
-  to echo its `name`/`token` (for the collect fallback).
+- Personas are not per-name agent files: spawn the single generic `agents/swarm-expert.toml` with the
+  runtime-produced `prompt.txt`. Fan-in is keyed by returned `agent_id`; persona names are only metadata in the
+  runtime spawn-order artifact.
 
 ## Runtime mapping
 
@@ -92,9 +92,9 @@ presenting final conclusions:
 python3 "$SWARM_DISCUSSION_PLUGIN_ROOT/runtime/swarm_runtime_wrapper.py" adapter-smoke --dir .swarm/discussions/{id}
 ```
 
-If runtime transport packet files are absent because the run explicitly used the legacy fallback path, continue
-with legacy validation and state in the final summary that runtime transport smoke was not applicable for this
-run.
+Runtime-backed runs must produce transport artifacts. If `transport/**/host-step.json` or
+`transport/**/collect-result.json` is missing, treat the run as incomplete and inspect the runtime command that
+should have produced it; do not silently downgrade to legacy validation.
 
 **Execution notes:** feed helpers their JSON via temp files inside `.swarm/discussions/{id}/tmp/`; never use
 user-scope `/tmp`, and never embed JSON literals directly in shell commands. Validate only committed

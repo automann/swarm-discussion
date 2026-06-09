@@ -296,6 +296,10 @@ check(
     "adapter-smoke --dir .swarm/discussions/{id}" in codex_skill_text,
     "codex skill documents bundled runtime transport smoke gate",
 )
+check(
+    "do not silently downgrade to legacy validation" in codex_skill_text,
+    "codex skill fails missing runtime transport artifacts instead of downgrading",
+)
 for primitive in (
     "prompt-build",
     "transport-init",

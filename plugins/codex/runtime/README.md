@@ -1,9 +1,10 @@
 # Codex Runtime Wrapper
 
 This directory is the plugin-side integration skeleton for the v2 runtime. The
-published skill still uses the legacy in-prompt orchestration path by default.
-The wrapper exists so we can exercise the runtime contract from inside the
-plugin package without copying runtime logic back into `SKILL.md`.
+published Codex skill now routes prompt, transport, and WAL mechanics through
+this wrapper while keeping actual subagent spawn/wait in the root thread. The
+wrapper exists so the plugin can exercise the runtime contract without copying
+runtime logic back into `SKILL.md`.
 
 The wrapper owns only three jobs:
 

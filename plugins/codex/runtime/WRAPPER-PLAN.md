@@ -3,13 +3,18 @@
 The goal is to move orchestration mechanics out of the parent conversation while
 keeping the published plugin usable throughout the migration.
 
+Current status: Codex has passed deterministic runtime-backed flow smoke and a
+manual live `swarm-expert` smoke. The skill now treats runtime-backed prompt,
+transport, and WAL commands as the default path; live spawn/wait remains in the
+root thread.
+
 ## P0: Wrapper Skeleton
 
 - Add a plugin-side wrapper that resolves the runtime CLI.
 - Verify the runtime contract before any runtime-dependent flow.
 - Delegate non-mutating gates first: `runtime-contract`, `adapter-smoke`, and
   `validate-loop`.
-- Keep the current skill behavior as the default path.
+- Keep the current skill behavior available while the wrapper is introduced.
 
 Acceptance:
 
@@ -59,9 +64,10 @@ Acceptance:
 
 ## P4: Default Runtime Path
 
-- Make the runtime-backed path the default after repeated clean-install smoke
-  runs pass.
-- Preserve the legacy flow behind an explicit fallback note for one release.
+- Make the runtime-backed path the default after repeated clean-install and live
+  smoke runs pass.
+- Preserve legacy behavior only as a deliberate operator escape hatch, not as an
+  automatic downgrade when runtime artifacts are missing.
 - Remove fallback instructions only after published installer and marketplace
   validation are stable.
 
