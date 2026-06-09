@@ -33,3 +33,8 @@ complete simulated finish path.
 Codex plugin wrapper. It installs the plugin into a temporary `CODEX_HOME`, then
 runs `doctor --smoke-fixture`, `runtime_flow_smoke.py --wrapper`, and
 `live_runtime_flow.py --wrapper self-test` against the installed wrapper.
+
+`CODEX-RUNTIME-FLOW-COMPLETION-AUDIT.md` is the requirement-by-requirement audit
+for the Codex runtime-backed flow. It ties the natural skill entry, deterministic
+smoke, live subagent smoke, and clean-install wrapper smoke back to the goal of
+moving prompt-build, fan-in collection, and WAL ownership into runtime commands.
