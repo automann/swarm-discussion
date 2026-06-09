@@ -27,9 +27,9 @@ def write_json(path: Path, payload: Any) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
 
 
-def run_wrapper(*args: str, expect_ok: bool = True) -> dict[str, Any]:
+def run_wrapper(wrapper: Path, *args: str, expect_ok: bool = True) -> dict[str, Any]:
     completed = subprocess.run(
-        [sys.executable, str(WRAPPER), *args],
+        [sys.executable, str(wrapper), *args],
         cwd=str(REPO),
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -63,7 +63,7 @@ def persona(persona_id: str, name: str, bias: str) -> dict[str, Any]:
     }
 
 
-def build_flow(root: Path) -> dict[str, Any]:
+def build_flow(root: Path, wrapper: Path) -> dict[str, Any]:
     discussion_id = "runtime-flow-smoke"
     discussion = root / ".swarm" / "discussions" / discussion_id
     tmp = discussion / "tmp"
@@ -116,7 +116,7 @@ def build_flow(root: Path) -> dict[str, Any]:
         },
     )
     context_path = discussion / "context" / "summary.md"
-    context = run_wrapper("context-build", "--brief", str(brief_path), "--out", str(context_path))
+    context = run_wrapper(wrapper, "context-build", "--brief", str(brief_path), "--out", str(context_path))
     assert context["result"]["ok"] is True
     assert context_path.exists()
 
@@ -137,7 +137,7 @@ def build_flow(root: Path) -> dict[str, Any]:
                 "instruction": "Declare whether the runtime-backed path is ready to be the default smoke surface.",
             },
         )
-        prompt = run_wrapper("prompt-build", "--request", str(request_path), "--out-dir", str(out_dir))
+        prompt = run_wrapper(wrapper, "prompt-build", "--request", str(request_path), "--out-dir", str(out_dir))
         assert prompt["result"]["ok"] is True
         prompt_outputs.append(out_dir / "prompt-build.json")
         assert (out_dir / "prompt.txt").exists()
@@ -151,6 +151,7 @@ def build_flow(root: Path) -> dict[str, Any]:
         ],
     )
     transport_init = run_wrapper(
+        wrapper,
         "transport-init",
         "--dir",
         str(discussion),
@@ -186,6 +187,7 @@ def build_flow(root: Path) -> dict[str, Any]:
         },
     )
     run_wrapper(
+        wrapper,
         "transport-append-batch",
         "--dir",
         str(discussion),
@@ -197,6 +199,7 @@ def build_flow(root: Path) -> dict[str, Any]:
         str(first_batch_path),
     )
     partial_collect = run_wrapper(
+        wrapper,
         "transport-collect",
         "--dir",
         str(discussion),
@@ -228,6 +231,7 @@ def build_flow(root: Path) -> dict[str, Any]:
         },
     )
     run_wrapper(
+        wrapper,
         "transport-append-batch",
         "--dir",
         str(discussion),
@@ -239,6 +243,7 @@ def build_flow(root: Path) -> dict[str, Any]:
         str(second_batch_path),
     )
     collect = run_wrapper(
+        wrapper,
         "transport-collect",
         "--dir",
         str(discussion),
@@ -263,6 +268,7 @@ def build_flow(root: Path) -> dict[str, Any]:
             },
         )
         append = run_wrapper(
+            wrapper,
             "append-message",
             "--dir",
             str(discussion),
@@ -297,6 +303,7 @@ def build_flow(root: Path) -> dict[str, Any]:
     checkpoint_state_path = tmp / "checkpoint-state-r001.json"
     write_json(checkpoint_state_path, state)
     checkpoint = run_wrapper(
+        wrapper,
         "checkpoint",
         "--dir",
         str(discussion),
@@ -312,6 +319,7 @@ def build_flow(root: Path) -> dict[str, Any]:
     final_state_path = tmp / "final-state-r001.json"
     write_json(final_state_path, state)
     finalize = run_wrapper(
+        wrapper,
         "finalize-round",
         "--dir",
         str(discussion),
@@ -338,24 +346,25 @@ def build_flow(root: Path) -> dict[str, Any]:
     )
     shutil.rmtree(tmp)
 
-    validate_round = run_wrapper("validate-round", str(discussion / "rounds" / "001.json"))
+    validate_round = run_wrapper(wrapper, "validate-round", str(discussion / "rounds" / "001.json"))
     assert validate_round["result"]["ok"] is True
 
-    trace = run_wrapper("trace", "--dir", str(discussion))
+    trace = run_wrapper(wrapper, "trace", "--dir", str(discussion))
     assert trace["result"]["health"] == "on-track"
     write_json(artifacts / "trace.json", trace["result"])
-    evidence = run_wrapper("evidence", "--dir", str(discussion), "--output", str(artifacts / "evidence.json"))
+    evidence = run_wrapper(wrapper, "evidence", "--dir", str(discussion), "--output", str(artifacts / "evidence.json"))
     assert evidence["result"]["outcome"]["result"] == "completed"
 
-    adapter_smoke = run_wrapper("adapter-smoke", "--dir", str(discussion))
+    adapter_smoke = run_wrapper(wrapper, "adapter-smoke", "--dir", str(discussion))
     assert adapter_smoke["result"]["ok"] is True
-    validate_loop = run_wrapper("validate-loop", str(discussion))
+    validate_loop = run_wrapper(wrapper, "validate-loop", str(discussion))
     assert validate_loop["result"]["ok"] is True
 
     return {
         "ok": True,
         "discussionDir": str(discussion),
         "summary": {
+            "wrapper": str(wrapper),
             "contextSummary": str(context_path),
             "promptBuildCount": len(prompt_outputs),
             "partialMissingAgentIds": partial_collect["result"]["result"]["missingAgentIds"],
@@ -374,18 +383,27 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run a Codex runtime-backed discussion flow smoke")
     parser.add_argument("--keep", action="store_true", help="Keep the generated smoke directory")
     parser.add_argument("--root", type=Path, help="Root directory for the generated .swarm tree")
+    parser.add_argument(
+        "--wrapper",
+        type=Path,
+        default=WRAPPER,
+        help="Path to swarm_runtime_wrapper.py, defaulting to this checkout's Codex plugin wrapper",
+    )
     args = parser.parse_args(argv)
+    wrapper = args.wrapper.expanduser().resolve()
+    if not wrapper.exists():
+        raise SystemExit(f"wrapper does not exist: {wrapper}")
 
     if args.root:
         root = args.root
         root.mkdir(parents=True, exist_ok=True)
-        payload = build_flow(root)
+        payload = build_flow(root, wrapper)
         print(json.dumps(payload, indent=2, sort_keys=True))
         return 0
 
     with tempfile.TemporaryDirectory(prefix="swarm-runtime-flow-smoke.") as tmp:
         root = Path(tmp)
-        payload = build_flow(root)
+        payload = build_flow(root, wrapper)
         if args.keep:
             kept = Path(tempfile.mkdtemp(prefix="swarm-runtime-flow-smoke-kept."))
             shutil.copytree(root, kept, dirs_exist_ok=True)
