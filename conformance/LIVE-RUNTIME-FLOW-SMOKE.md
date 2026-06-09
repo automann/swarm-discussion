@@ -26,20 +26,22 @@ artifacts, or merge wait results outside runtime helpers.
 
 - Date: 2026-06-10
 - Workspace: `/Users/syfq/dev/harness/swarm-discussion`
+- Harness: `conformance/live_runtime_flow.py prepare` + `finish --require-partial`
 - Artifact root:
-  `/tmp/swarm-live-runtime-flow.1781024899/.swarm/discussions/live-runtime-flow`
+  `/private/tmp/swarm-live-runtime-flow-1781025619/.swarm/discussions/live-runtime-flow`
 - Spawned agents:
-  - architect: `019ead5b-c643-7c23-9800-70227c367388`
-  - contrarian: `019ead5b-f01f-7633-a42d-3baea5cb3d74`
+  - architect: `019ead66-9520-7840-89b2-2605d87f0a10`
+  - contrarian: `019ead66-bd3a-7502-b741-6a4c75827ed5`
 
 Evidence:
 
 ```json
 {
-  "partialMissingAgentIds": ["019ead5b-f01f-7633-a42d-3baea5cb3d74"],
+  "partialMissingAgentIds": ["019ead66-bd3a-7502-b741-6a4c75827ed5"],
   "messageIds": ["r1-msg-001", "r1-msg-002"],
   "waitBatchCount": 2,
   "collectResultCount": 1,
+  "promptBuildCount": 2,
   "finalRoundCount": 1,
   "traceHealth": "on-track",
   "evidenceOutcome": "completed",
@@ -48,11 +50,13 @@ Evidence:
 }
 ```
 
-The first `wait_agent` call returned only the architect result. The first
-`transport-collect` correctly failed with the contrarian `agent_id` missing.
-After the second raw wait batch was appended, `transport-collect` completed and
-the same artifact tree passed `validate-round`, `trace`, `evidence`,
-`adapter-smoke`, and `validate-loop`.
+The harness `prepare` step generated the parent context summary and both persona
+prompts. The first saved raw `wait_agent` batch contained only the architect
+result, so the first `transport-collect` correctly failed with the contrarian
+`agent_id` missing. After the second raw wait batch was appended,
+`transport-collect` completed, runtime WAL minted `r1-msg-001` and
+`r1-msg-002`, and the same artifact tree passed `validate-round`, `trace`,
+`evidence`, `adapter-smoke`, and `validate-loop`.
 
 ## Reproduction Checklist
 

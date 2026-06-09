@@ -18,6 +18,8 @@ separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each 
 - Added a two-phase live-smoke harness (`conformance/live_runtime_flow.py`) that prepares runtime prompts,
   lets the operator save real spawn/wait evidence, then finishes transport collection, WAL finalization, and
   loop validation through runtime commands.
+- Refreshed the live-smoke audit with the harness path and real `swarm-expert` agents, including a required
+  partial fan-in failure before the final collect succeeds.
 - Codex `SKILL.md` now treats missing runtime transport artifacts as incomplete instead of silently
   downgrading to legacy validation.
 - Bumped the Codex bundle to `0.1.10`.
