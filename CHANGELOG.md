@@ -3,6 +3,16 @@
 All notable changes to swarm-discussion. Versioning is SemVer; the on-disk data contract is versioned
 separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each plugin bundle).
 
+## [0.1.15] - 2026-06-10 - Codex runtime-owned transport artifacts (Codex 0.1.10)
+
+- Vendored runtime now includes `transport-init`, `transport-append-batch`, and `transport-collect`, so the
+  runtime writes `host-step.json`, `spawn-order.json`, `wait-batches.jsonl`, and `collect-result.json`.
+- Codex `SKILL.md` now routes spawn/wait artifact handling through those transport helpers instead of asking
+  the parent thread to hand-write standard transport files.
+- Wrapper conformance now proves the new transport helper roundtrip and requires the commands in the runtime
+  contract.
+- Bumped the Codex bundle to `0.1.10`.
+
 ## [0.1.14] - 2026-06-10 - Codex runtime primitive handoff (Codex 0.1.9)
 
 - Codex runtime wrapper now delegates stable runtime primitives (`context-build`, `prompt-build`,

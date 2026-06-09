@@ -51,8 +51,8 @@ then apply the runtime mapping below.
 | Seam method | Implementation |
 |---|---|
 | `spawnTeam(id)` | assert `python3 "$SWARM_DISCUSSION_SKILL_DIR/protocol/wal.py" valid_discussion_id {id}`, then `mkdir -p .swarm/discussions/{id}/{rounds,tmp}` |
-| `spawnPersona(name, promptPath, {bg})` | spawn the `swarm-expert` subagent with prompt text read from the runtime-produced `prompt.txt`; **record the returned `agent_id` against `name`** in `transport/rNNN/{phase}/spawn-order.json` |
-| `collectResult(...)` (a step's batch) | append each raw `wait_agent` map as one JSONL line under `transport/rNNN/{phase}/wait-batches.jsonl`, then run `python3 "$SWARM_DISCUSSION_PLUGIN_ROOT/runtime/swarm_runtime_wrapper.py" collect-merge --spawn-order .swarm/discussions/{id}/transport/rNNN/{phase}/spawn-order.json --wait-result .swarm/discussions/{id}/transport/rNNN/{phase}/wait-batches.jsonl`; save `.result` to `transport/rNNN/{phase}/collect-result.json`. **`wait_agent` may return partial batches** — poll until every spawn-order agent is complete before treating missing agents as failure. |
+| `spawnPersona(name, promptPath, {bg})` | spawn the `swarm-expert` subagent with prompt text read from the runtime-produced `prompt.txt`; collect returned `{agentId, persona}` entries in `.swarm/discussions/{id}/tmp/spawn-order-rNNN-{phase}.json` |
+| `collectResult(...)` (a step's batch) | after `transport-init`, write each raw `wait_agent` map to `.swarm/discussions/{id}/tmp/wait-batch.json` and run `transport-append-batch`; after all required agents complete, run `transport-collect` to write `transport/rNNN/{phase}/collect-result.json` through runtime `collect-merge`. **`wait_agent` may return partial batches** — poll until every spawn-order agent is complete before treating missing agents as failure. |
 | `postToLog(entry)` | write `entry` to `.swarm/discussions/{id}/tmp/message.json`, then `python3 "$SWARM_DISCUSSION_PLUGIN_ROOT/runtime/swarm_runtime_wrapper.py" append-message --dir .swarm/discussions/{id} --round N --phase P --message .swarm/discussions/{id}/tmp/message.json`; use `.result.message.id` as the durable message id |
 | `checkpoint(round, state, commit?)` | write `state` to `.swarm/discussions/{id}/tmp/state.json`, then `python3 "$SWARM_DISCUSSION_PLUGIN_ROOT/runtime/swarm_runtime_wrapper.py" checkpoint --dir .swarm/discussions/{id} --round N --phase P --state .swarm/discussions/{id}/tmp/state.json` after every step; `commit:true` ⇒ run `finalize-round --dir .swarm/discussions/{id} --round N --state .swarm/discussions/{id}/tmp/state.json`. Runtime WAL owns message-id minting, partial writes, progress, events, and final promotion. |
 | `teardown()` | no-op (subagents are ephemeral); flip `manifest.status`; remove `.swarm/discussions/{id}/tmp/`. Close completed subagents between steps (agent-thread capacity). |
@@ -66,10 +66,14 @@ For each spawn step (declarations / arguments / responses):
 2. For each persona, write a prompt-build request under
    `.swarm/discussions/{id}/prompts/rNNN/{phase}/{persona}/request.json`, then run
    `python3 "$SWARM_DISCUSSION_PLUGIN_ROOT/runtime/swarm_runtime_wrapper.py" prompt-build --request ... --out-dir .swarm/discussions/{id}/prompts/rNNN/{phase}/{persona}`. Spawn `swarm-expert` with the produced `prompt.txt`.
-3. Record each returned `agent_id` into `transport/rNNN/{phase}/spawn-order.json` using the same persona order
-   used for prompt-build.
-4. Poll `wait_agent`; append every raw batch to `transport/rNNN/{phase}/wait-batches.jsonl`; run runtime
-   `collect-merge`; save `.result` to `transport/rNNN/{phase}/collect-result.json`.
+3. Write the returned `{agentId, persona}` list to `.swarm/discussions/{id}/tmp/spawn-order-rNNN-{phase}.json`
+   using the same persona order used for prompt-build. Then run:
+   `python3 "$SWARM_DISCUSSION_PLUGIN_ROOT/runtime/swarm_runtime_wrapper.py" transport-init --dir .swarm/discussions/{id} --host codex --discussion-id {id} --round N --phase P --spawn-order .swarm/discussions/{id}/tmp/spawn-order-rNNN-{phase}.json`
+4. Poll `wait_agent`; for each raw batch, write `.swarm/discussions/{id}/tmp/wait-batch-rNNN-{phase}.json`
+   and run:
+   `python3 "$SWARM_DISCUSSION_PLUGIN_ROOT/runtime/swarm_runtime_wrapper.py" transport-append-batch --dir .swarm/discussions/{id} --round N --phase P --wait-result .swarm/discussions/{id}/tmp/wait-batch-rNNN-{phase}.json`.
+   After every spawn-order agent is complete, run:
+   `python3 "$SWARM_DISCUSSION_PLUGIN_ROOT/runtime/swarm_runtime_wrapper.py" transport-collect --dir .swarm/discussions/{id} --round N --phase P`.
 5. For each collected persona result, call runtime `append-message` rather than minting ids in context. Use the
    returned message objects when constructing the in-memory round state.
 6. `checkpoint` the round state after each step through the runtime wrapper. At round end, run
@@ -80,9 +84,9 @@ After responses: run the provenance gate (`python3 "$SWARM_DISCUSSION_SKILL_DIR/
 fail the round + re-inject. Record `positionShifts[].trigger` as the real `shiftTriggerIds` array. Validate the
 committed round with `python3 "$SWARM_DISCUSSION_PLUGIN_ROOT/runtime/swarm_runtime_wrapper.py" validate-round .swarm/discussions/{id}/rounds/NNN.json`.
 
-For every runtime-backed spawn step, write `transport/rNNN/{phase}/host-step.json` after `collect-merge` with
-the thin parent context surface: `briefPath`, `phase`, `agentIds`, and `nextHelperCommand`. Run the bundled
-smoke gate before presenting final conclusions:
+For every runtime-backed spawn step, `transport-init` writes `host-step.json` with the thin parent context
+surface: `briefPath`, `phase`, `agentIds`, and `nextHelperCommand`. Run the bundled smoke gate before
+presenting final conclusions:
 
 ```
 python3 "$SWARM_DISCUSSION_PLUGIN_ROOT/runtime/swarm_runtime_wrapper.py" adapter-smoke --dir .swarm/discussions/{id}

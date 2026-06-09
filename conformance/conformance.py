@@ -296,7 +296,15 @@ check(
     "adapter-smoke --dir .swarm/discussions/{id}" in codex_skill_text,
     "codex skill documents bundled runtime transport smoke gate",
 )
-for primitive in ("prompt-build", "collect-merge", "append-message", "finalize-round"):
+for primitive in (
+    "prompt-build",
+    "transport-init",
+    "transport-append-batch",
+    "transport-collect",
+    "collect-merge",
+    "append-message",
+    "finalize-round",
+):
     check(
         primitive in codex_skill_text,
         f"codex skill routes real flow through runtime {primitive}",
@@ -320,12 +328,32 @@ with calls.open("a") as handle:
 
 command = sys.argv[1] if len(sys.argv) > 1 else ""
 if command == "runtime-contract":
+    required_commands = [
+        "context-build",
+        "prompt-build",
+        "collect-merge",
+        "transport-init",
+        "transport-append-batch",
+        "transport-collect",
+        "append-message",
+        "checkpoint",
+        "finalize-round",
+        "resume-plan",
+        "validate-round",
+        "validate-discussion",
+        "trace",
+        "evidence",
+        "validate-host-step",
+        "capability-doctor",
+        "adapter-smoke",
+        "validate-loop",
+    ]
     print(json.dumps({{
         "ok": True,
         "contract": {{
             "kind": "swarm.runtime_contract",
             "runtime": {{"compatibility": "swarm-runtime-v2-alpha"}},
-            "commands": {{"adapter-smoke": {{}}, "validate-loop": {{}}}},
+            "commands": {{name: {{}} for name in required_commands}},
         }},
         "validation": {{
             "summary": {{
@@ -440,6 +468,115 @@ with tempfile.TemporaryDirectory() as tmp:
     if collect_merge.returncode == 0:
         payload = json.loads(collect_merge.stdout)
         check(payload["result"]["complete"] is True, "codex runtime wrapper collect-merge completes fixture fan-in")
+
+    transport_dir = tmp_path / "transport-discussion"
+    spawn_order = tmp_path / "spawn-order.json"
+    wait_result = tmp_path / "wait-result.json"
+    spawn_order.write_text(
+        json.dumps(
+            [
+                {"agentId": "agent-architect", "persona": "architect"},
+                {"agentId": "agent-contrarian", "persona": "contrarian"},
+            ]
+        )
+        + "\n"
+    )
+    wait_result.write_text(
+        json.dumps(
+            {
+                "status": {
+                    "agent-architect": {
+                        "completed": json.dumps({"name": "architect", "claim": "transport works"})
+                    },
+                    "agent-contrarian": {
+                        "completed": json.dumps({"name": "contrarian", "claim": "smoke the failure path"})
+                    },
+                },
+                "timed_out": False,
+            }
+        )
+        + "\n"
+    )
+    transport_init = subprocess.run(
+        [
+            sys.executable,
+            str(wrapper),
+            "transport-init",
+            "--dir",
+            str(transport_dir),
+            "--host",
+            "codex",
+            "--discussion-id",
+            "wrapper-transport",
+            "--round",
+            "1",
+            "--phase",
+            "response",
+            "--spawn-order",
+            str(spawn_order),
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    check(transport_init.returncode == 0, "codex runtime wrapper delegates transport-init primitive")
+    if transport_init.returncode == 0:
+        payload = json.loads(transport_init.stdout)
+        check(
+            payload["result"]["hostStep"]["parentContext"]["nextHelperCommand"].endswith(
+                "transport-collect --dir . --round 1 --phase response"
+            ),
+            "codex runtime wrapper transport-init writes transport-collect next helper",
+        )
+        check(
+            (transport_dir / "transport/r001/response/host-step.json").exists(),
+            "codex runtime wrapper transport-init writes host-step",
+        )
+
+    transport_append = subprocess.run(
+        [
+            sys.executable,
+            str(wrapper),
+            "transport-append-batch",
+            "--dir",
+            str(transport_dir),
+            "--round",
+            "1",
+            "--phase",
+            "response",
+            "--wait-result",
+            str(wait_result),
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    check(transport_append.returncode == 0, "codex runtime wrapper delegates transport-append-batch primitive")
+
+    transport_collect = subprocess.run(
+        [
+            sys.executable,
+            str(wrapper),
+            "transport-collect",
+            "--dir",
+            str(transport_dir),
+            "--round",
+            "1",
+            "--phase",
+            "response",
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    check(transport_collect.returncode == 0, "codex runtime wrapper delegates transport-collect primitive")
+    if transport_collect.returncode == 0:
+        payload = json.loads(transport_collect.stdout)
+        check(payload["result"]["result"]["complete"] is True, "codex runtime wrapper transport-collect completes fan-in")
+        check(
+            (transport_dir / "transport/r001/response/collect-result.json").exists(),
+            "codex runtime wrapper transport-collect writes collect-result",
+        )
 
     discussion_dir = tmp_path / "discussion"
     message1 = tmp_path / "message1.json"

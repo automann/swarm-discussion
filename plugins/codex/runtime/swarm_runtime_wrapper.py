@@ -28,6 +28,9 @@ PRIMITIVE_COMMANDS = [
     "context-build",
     "prompt-build",
     "collect-merge",
+    "transport-init",
+    "transport-append-batch",
+    "transport-collect",
     "append-message",
     "checkpoint",
     "finalize-round",
@@ -141,7 +144,8 @@ def contract_ok(payload: Any) -> bool:
     commands = contract.get("commands")
     if not isinstance(commands, dict):
         return False
-    return ADAPTER_SMOKE in commands and VALIDATE_LOOP in commands
+    required = {ADAPTER_SMOKE, VALIDATE_LOOP, *PRIMITIVE_COMMANDS}
+    return required <= set(commands)
 
 
 def contract_summary(payload: dict[str, Any]) -> dict[str, Any]:

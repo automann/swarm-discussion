@@ -91,6 +91,7 @@ jobs:
               "adapter-smoke",
               "validate-host-step",
               "host-step",
+              "--host codex",
               ".codex",
               ".tmp/marketplaces",
           )

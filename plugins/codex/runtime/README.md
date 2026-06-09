@@ -11,6 +11,7 @@ The wrapper owns only three jobs:
   bundled `runtime/swarm_rt.py`, or `swarm-rt` on `PATH`.
 - Verify `runtime-contract` and the `swarm-runtime-v2-alpha` compatibility id.
 - Delegate integration gates and runtime primitives such as `prompt-build`,
+  `transport-init`, `transport-append-batch`, `transport-collect`,
   `collect-merge`, and WAL commands.
 
 It must not construct prompts, merge wait results, mint message ids, mutate WAL
@@ -76,6 +77,7 @@ If the runtime is installed as `swarm-rt`, the `--runtime` flag can be omitted.
 
 ## Current Status
 
-This is still a migration bridge. The live skill remains on the existing
-bundled-helper flow until the skill prompt is switched to the runtime-backed
-adapter path.
+This is still a migration bridge, but the live skill now routes prompt,
+transport, and WAL mechanics through runtime commands. Host spawning and
+waiting stay in the Codex layer; standard discussion artifacts are produced by
+the vendored runtime.
