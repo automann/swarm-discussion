@@ -56,26 +56,40 @@ the same artifact tree passed `validate-round`, `trace`, `evidence`,
 
 ## Reproduction Checklist
 
-1. Generate a temporary discussion directory outside the repo, for example
-   `/tmp/swarm-live-runtime-flow.<id>/.swarm/discussions/live-runtime-flow`.
-2. Use `python3 plugins/codex/runtime/swarm_runtime_wrapper.py context-build`
-   to write `context/summary.md`.
-3. Use `prompt-build` to write one prompt directory per persona.
-4. Spawn `agent_type="swarm-expert"` once per generated `prompt.txt`.
-5. Write a temporary spawn-order input containing only `{agentId, persona}`
-   pairs from the spawn return values.
-6. Run `transport-init`.
-7. Append each raw `wait_agent` response with `transport-append-batch`.
-8. Run `transport-collect` after each batch. A partial batch should fail with
-   `missingAgentIds`; the complete set should pass.
-9. Convert collected persona payloads into message payload files and call
-   `append-message`.
-10. Use `checkpoint` and `finalize-round` for WAL state.
-11. Mark the manifest completed, write `artifacts/synthesis.md`, remove `tmp/`,
-    then run `validate-round`, `trace`, `evidence`, `adapter-smoke`, and
-    `validate-loop`.
+Use the two-phase harness whenever possible:
 
-The deterministic companion test is `conformance/runtime_flow_smoke.py`. It
-simulates the spawn/wait boundary and should stay in CI; this live gate should
-be rerun when changing Codex skill orchestration, custom-agent registration, or
-transport/WAL handoff behavior.
+```sh
+python3 conformance/live_runtime_flow.py prepare --root /tmp/swarm-live-runtime-flow.<id>
+```
+
+The `prepare` step writes `context/summary.md`, the two `prompt-build`
+artifacts, `prompt.txt` files, and an `operator/live-runtime-flow-packet.json`.
+From the Codex root thread:
+
+1. Spawn `agent_type="swarm-expert"` once per packet prompt.
+2. Save the returned agent IDs to `operator/spawn-order.json`.
+3. Save each raw `wait_agent` response as `operator/wait-batch-N.json`.
+
+Then finish the flow through runtime transport and WAL helpers:
+
+```sh
+python3 conformance/live_runtime_flow.py finish \
+  --discussion-dir /tmp/swarm-live-runtime-flow.<id>/.swarm/discussions/live-runtime-flow \
+  --spawn-order /tmp/swarm-live-runtime-flow.<id>/.swarm/discussions/live-runtime-flow/operator/spawn-order.json \
+  --wait-result /tmp/swarm-live-runtime-flow.<id>/.swarm/discussions/live-runtime-flow/operator/wait-batch-1.json
+```
+
+Repeat `--wait-result` for each saved wait batch. Add `--require-partial` when
+the run is intended to prove a partial `wait_agent` fan-in failure before the
+complete batch arrives.
+
+The deterministic companion tests are:
+
+```sh
+python3 conformance/live_runtime_flow.py self-test
+python3 conformance/runtime_flow_smoke.py
+```
+
+`runtime_flow_smoke.py` simulates the spawn/wait boundary and should stay in CI.
+Rerun the live gate when changing Codex skill orchestration, custom-agent
+registration, or transport/WAL handoff behavior.

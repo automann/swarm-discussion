@@ -21,3 +21,10 @@ It starts from an empty discussion directory and composes `context-build`,
 `LIVE-RUNTIME-FLOW-SMOKE.md` records the manual live gate for the same flow with
 real `swarm-expert` subagents. Rerun that gate when changing Codex skill
 orchestration, custom-agent registration, or transport/WAL handoff behavior.
+
+`live_runtime_flow.py` makes that live gate reproducible. `prepare` writes the
+runtime-owned context and prompt artifacts plus an operator packet; after the
+root thread records real spawn IDs and raw `wait_agent` batches, `finish` runs
+runtime transport collection, WAL append/checkpoint/finalization, and the loop
+validators. `self-test` covers missing spawn-order, partial fan-in, and a
+complete simulated finish path.

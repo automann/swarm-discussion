@@ -451,6 +451,21 @@ if flow_smoke.returncode == 0:
     check(summary["adapterSmokeOk"] is True, "codex runtime flow smoke passes adapter-smoke")
     check(summary["validateLoopOk"] is True, "codex runtime flow smoke passes validate-loop")
 
+live_harness = subprocess.run(
+    [sys.executable, str(REPO / "conformance/live_runtime_flow.py"), "self-test"],
+    cwd=str(REPO),
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+    text=True,
+)
+check(live_harness.returncode == 0, "codex live runtime flow harness self-test passes")
+if live_harness.returncode == 0:
+    payload = json.loads(live_harness.stdout)
+    checks = {item["name"]: item["ok"] for item in payload["checks"]}
+    check(checks.get("missing spawn-order fails") is True, "live harness rejects missing spawn-order")
+    check(checks.get("partial fan-in fails before WAL") is True, "live harness rejects incomplete fan-in")
+    check(checks.get("finish validates completed loop") is True, "live harness validates completed loop")
+
 with tempfile.TemporaryDirectory() as tmp:
     tmp_path = Path(tmp)
     prompt_out = tmp_path / "prompt"
