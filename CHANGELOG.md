@@ -13,6 +13,8 @@ separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each 
   contract.
 - Added an end-to-end runtime-backed flow smoke that composes `context-build`, `prompt-build`, transport
   helpers, WAL commands, `adapter-smoke`, and `validate-loop` from an empty discussion directory.
+- Added a manual live-smoke audit proving the same flow with real `swarm-expert` subagents and partial
+  `wait_agent` fan-in.
 - Bumped the Codex bundle to `0.1.10`.
 
 ## [0.1.14] - 2026-06-10 - Codex runtime primitive handoff (Codex 0.1.9)
