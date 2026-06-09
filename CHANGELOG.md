@@ -3,6 +3,15 @@
 All notable changes to swarm-discussion. Versioning is SemVer; the on-disk data contract is versioned
 separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each plugin bundle).
 
+## [0.1.16] - 2026-06-10 - Codex runtime-backed entry contract (Codex 0.1.11)
+
+- Codex `SKILL.md` now declares the runtime-backed path as the default entry contract: the root thread may
+  prepare compact temp inputs and call Codex spawn/wait/close, but must not build prompts, merge fan-in, mint
+  message IDs, patch WAL files, or substitute fixture-only validation for the actual discussion artifact tree.
+- Conformance now guards that contract so the natural Codex skill entry cannot drift back to parent-side
+  prompt/fan-in/WAL orchestration.
+- Bumped the Codex bundle to `0.1.11`.
+
 ## [0.1.15] - 2026-06-10 - Codex runtime-owned transport artifacts (Codex 0.1.10)
 
 - Vendored runtime now includes `transport-init`, `transport-append-batch`, and `transport-collect`, so the

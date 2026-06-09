@@ -46,6 +46,22 @@ then apply the runtime mapping below.
   runtime-produced `prompt.txt`. Fan-in is keyed by returned `agent_id`; persona names are only metadata in the
   runtime spawn-order artifact.
 
+## Default entry contract
+
+The Codex entry path is runtime-backed by default. The root thread may only prepare compact temp input files,
+call Codex spawn/wait/close primitives, and pass raw host results into runtime commands. The root thread must
+not:
+
+- derive persona prompt text without `prompt-build`;
+- merge `wait_agent` statuses outside `transport-collect` / runtime `collect-merge`;
+- mint message IDs, edit committed round files, or patch WAL partial files directly;
+- call legacy `wal.py flush` / `commit` for runtime-backed runs;
+- treat fixture-only `adapter-smoke` or `validate-loop` results as a substitute for validating the actual
+  discussion artifact tree.
+
+If a runtime primitive fails, stop and repair that primitive's inputs or output. Do not continue by building
+standard protocol artifacts in the parent context.
+
 ## Runtime mapping
 
 | Seam method | Implementation |

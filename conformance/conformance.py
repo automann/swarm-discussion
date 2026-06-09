@@ -300,6 +300,45 @@ check(
     "do not silently downgrade to legacy validation" in codex_skill_text,
     "codex skill fails missing runtime transport artifacts instead of downgrading",
 )
+for invariant, message in (
+    (
+        "The Codex entry path is runtime-backed by default.",
+        "codex skill declares runtime-backed entry as default",
+    ),
+    (
+        "The root thread may only prepare compact temp input files",
+        "codex skill keeps root thread as thin host operator",
+    ),
+    (
+        "derive persona prompt text without `prompt-build`",
+        "codex skill forbids parent-built prompts",
+    ),
+    (
+        "merge `wait_agent` statuses outside `transport-collect` / runtime `collect-merge`",
+        "codex skill forbids parent-side fan-in merge",
+    ),
+    (
+        "mint message IDs, edit committed round files, or patch WAL partial files directly",
+        "codex skill forbids parent-side WAL/message-id mutation",
+    ),
+    (
+        "call legacy `wal.py flush` / `commit` for runtime-backed runs",
+        "codex skill forbids legacy WAL commit path",
+    ),
+    (
+        "If a runtime primitive fails, stop and repair that primitive's inputs or output.",
+        "codex skill fails closed instead of hand-building runtime artifacts",
+    ),
+):
+    check(invariant in codex_skill_text, message)
+check(
+    "standard protocol artifacts in the parent context" in codex_skill_text,
+    "codex skill forbids parent-built fallback artifacts",
+)
+check(
+    "protocol/collect.py" not in codex_skill_text,
+    "codex skill natural entry does not route through legacy protocol collect helper",
+)
 for primitive in (
     "prompt-build",
     "transport-init",
