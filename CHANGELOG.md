@@ -10,6 +10,7 @@ separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each 
   message IDs, patch WAL files, or substitute fixture-only validation for the actual discussion artifact tree.
 - Conformance now guards that contract so the natural Codex skill entry cannot drift back to parent-side
   prompt/fan-in/WAL orchestration.
+- Refreshed the installed-wrapper smoke audit against a clean `0.1.11` Codex plugin install.
 - Bumped the Codex bundle to `0.1.11`.
 
 ## [0.1.15] - 2026-06-10 - Codex runtime-owned transport artifacts (Codex 0.1.10)

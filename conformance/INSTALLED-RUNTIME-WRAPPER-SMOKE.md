@@ -8,12 +8,12 @@ install, not only from the source checkout.
 - Date: 2026-06-10
 - Workspace: `/Users/syfq/dev/harness/swarm-discussion`
 - Marketplace source: `automann/swarm-discussion --ref main`
-- Temporary `CODEX_HOME`: `/private/tmp/swarm-installed-wrapper-audit.vJM2Te`
+- Temporary `CODEX_HOME`: `/private/tmp/swarm-installed-wrapper-audit.qG9ihD`
 - Installed plugin root:
-  `/private/tmp/swarm-installed-wrapper-audit.vJM2Te/plugins/cache/swarm-discussion/swarm-discussion/0.1.10`
+  `/private/tmp/swarm-installed-wrapper-audit.qG9ihD/plugins/cache/swarm-discussion/swarm-discussion/0.1.11`
 - Installed wrapper:
-  `/private/tmp/swarm-installed-wrapper-audit.vJM2Te/plugins/cache/swarm-discussion/swarm-discussion/0.1.10/runtime/swarm_runtime_wrapper.py`
-- Installed plugin version: `0.1.10`
+  `/private/tmp/swarm-installed-wrapper-audit.qG9ihD/plugins/cache/swarm-discussion/swarm-discussion/0.1.11/runtime/swarm_runtime_wrapper.py`
+- Installed plugin version: `0.1.11`
 
 ## Commands
 
@@ -23,7 +23,8 @@ CODEX_HOME="$TMP_CODEX_HOME" codex plugin marketplace add automann/swarm-discuss
 CODEX_HOME="$TMP_CODEX_HOME" codex plugin add swarm-discussion@swarm-discussion
 CODEX_HOME="$TMP_CODEX_HOME" codex plugin list --json --available
 
-INSTALLED_WRAPPER="$TMP_CODEX_HOME/plugins/cache/swarm-discussion/swarm-discussion/0.1.10/runtime/swarm_runtime_wrapper.py"
+INSTALLED_WRAPPER="$(find "$TMP_CODEX_HOME/plugins/cache/swarm-discussion/swarm-discussion" \
+  -path '*/runtime/swarm_runtime_wrapper.py' | sort -V | tail -1)"
 python3 "$INSTALLED_WRAPPER" doctor --smoke-fixture
 python3 conformance/runtime_flow_smoke.py --wrapper "$INSTALLED_WRAPPER"
 python3 conformance/live_runtime_flow.py --wrapper "$INSTALLED_WRAPPER" self-test
@@ -36,7 +37,7 @@ python3 conformance/live_runtime_flow.py --wrapper "$INSTALLED_WRAPPER" self-tes
 ```json
 {
   "pluginId": "swarm-discussion@swarm-discussion",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "installed": true,
   "enabled": true
 }
