@@ -28,3 +28,8 @@ root thread records real spawn IDs and raw `wait_agent` batches, `finish` runs
 runtime transport collection, WAL append/checkpoint/finalization, and the loop
 validators. `self-test` covers missing spawn-order, partial fan-in, and a
 complete simulated finish path.
+
+`INSTALLED-RUNTIME-WRAPPER-SMOKE.md` records the clean-install gate for the
+Codex plugin wrapper. It installs the plugin into a temporary `CODEX_HOME`, then
+runs `doctor --smoke-fixture`, `runtime_flow_smoke.py --wrapper`, and
+`live_runtime_flow.py --wrapper self-test` against the installed wrapper.
