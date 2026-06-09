@@ -13,6 +13,7 @@ import json
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
@@ -249,6 +250,104 @@ if codex_protocol_collect.returncode == 0:
     check(
         [item["persona"] for item in demuxed["results"]] == ["schema-architect", "ops-engineer"],
         "codex protocol/collect.py preserves spawn order",
+    )
+
+wrapper = REPO / "plugins/codex/runtime/swarm_runtime_wrapper.py"
+with tempfile.TemporaryDirectory() as tmp:
+    tmp_path = Path(tmp)
+    fake_runtime = tmp_path / "fake_swarm_rt.py"
+    discussion_dir = tmp_path / "discussion"
+    calls_path = tmp_path / "calls.jsonl"
+    discussion_dir.mkdir()
+    fake_runtime.write_text(
+        f"""#!/usr/bin/env python3
+import json
+import sys
+from pathlib import Path
+
+calls = Path({str(calls_path)!r})
+with calls.open("a") as handle:
+    handle.write(json.dumps(sys.argv[1:]) + "\\n")
+
+command = sys.argv[1] if len(sys.argv) > 1 else ""
+if command == "runtime-contract":
+    print(json.dumps({{
+        "ok": True,
+        "contract": {{
+            "kind": "swarm.runtime_contract",
+            "runtime": {{"compatibility": "swarm-runtime-v2-alpha"}},
+            "commands": {{"adapter-smoke": {{}}, "validate-loop": {{}}}},
+        }},
+        "validation": {{
+            "summary": {{
+                "compatibility": "swarm-runtime-v2-alpha",
+                "integrationGates": ["adapter-smoke", "validate-loop"],
+            }}
+        }},
+    }}))
+    raise SystemExit(0)
+if command == "adapter-smoke":
+    print(json.dumps({{"ok": True, "received": sys.argv[1:]}}))
+    raise SystemExit(0)
+if command == "validate-loop":
+    print(json.dumps({{"ok": True, "received": sys.argv[1:]}}))
+    raise SystemExit(0)
+print(json.dumps({{"ok": False, "error": "unknown command", "argv": sys.argv[1:]}}))
+raise SystemExit(1)
+"""
+    )
+
+    doctor = subprocess.run(
+        [sys.executable, str(wrapper), "--runtime", str(fake_runtime), "doctor"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    check(doctor.returncode == 0, "codex runtime wrapper doctor accepts compatible fake runtime")
+    if doctor.returncode == 0:
+        payload = json.loads(doctor.stdout)
+        check(payload["ok"] is True, "codex runtime wrapper doctor reports ok")
+        check(
+            payload["wrapper"]["compatibility"] == "swarm-runtime-v2-alpha",
+            "codex runtime wrapper reports expected compatibility",
+        )
+
+    smoke = subprocess.run(
+        [
+            sys.executable,
+            str(wrapper),
+            "--runtime",
+            str(fake_runtime),
+            "adapter-smoke",
+            "--dir",
+            str(discussion_dir),
+            "--host-step",
+            "transport/r001/response/host-step.json",
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    check(smoke.returncode == 0, "codex runtime wrapper delegates adapter-smoke")
+    if smoke.returncode == 0:
+        payload = json.loads(smoke.stdout)
+        check(payload["ok"] is True, "codex runtime wrapper adapter-smoke reports ok")
+        check(
+            payload["result"]["received"][-2:] == ["--host-step", "transport/r001/response/host-step.json"],
+            "codex runtime wrapper preserves adapter-smoke host-step argument",
+        )
+
+    loop = subprocess.run(
+        [sys.executable, str(wrapper), "--runtime", str(fake_runtime), "validate-loop", str(discussion_dir)],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    check(loop.returncode == 0, "codex runtime wrapper delegates validate-loop")
+    calls = [json.loads(line) for line in calls_path.read_text().splitlines()]
+    check(
+        calls.count(["runtime-contract"]) == 3,
+        "codex runtime wrapper checks contract before each delegated gate",
     )
 
 shutil.rmtree("/tmp/swarm-discussion-conf-claude", ignore_errors=True)

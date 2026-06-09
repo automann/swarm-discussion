@@ -254,10 +254,16 @@ It ships **no server** ("native blackboard").
 .agents/plugins/marketplace.json  # Codex marketplace entry
 plugins/claude/                   # Claude Code plugin (skill + /swarm-discussion command)
 plugins/codex/                    # Codex plugin (skill + swarm-expert agent)
+plugins/codex/runtime/            # experimental runtime wrapper skeleton
 conformance/                      # cross-bundle conformance test
 ```
 
 Both bundles vendor the shared `protocol/` core; it is a vendored build artifact — don't edit it here.
+
+The Codex package also contains an experimental v2 runtime wrapper under `plugins/codex/runtime/`. It is inert
+unless explicitly called, and the current skill still uses the stable bundled-helper flow. The wrapper is the
+planned bridge to the separate `swarm-discussion-runtime` package: it verifies the runtime contract and delegates
+adapter-facing smoke gates without copying runtime orchestration logic into `SKILL.md`.
 
 ## Credits
 
