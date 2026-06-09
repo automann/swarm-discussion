@@ -283,6 +283,20 @@ if bundled_fixture_smoke.returncode == 0:
         "codex runtime wrapper fixture smoke replays transport",
     )
 
+codex_skill_text = (REPO / "plugins/codex/skills/swarm-discussion/SKILL.md").read_text()
+check(
+    "$CODEX_HOME/.tmp/marketplaces" in codex_skill_text,
+    "codex skill lookup covers marketplace-installed plugin roots",
+)
+check(
+    "doctor --smoke-fixture" in codex_skill_text,
+    "codex skill runs bundled runtime preflight",
+)
+check(
+    "adapter-smoke --dir .swarm/discussions/{id}" in codex_skill_text,
+    "codex skill documents bundled runtime transport smoke gate",
+)
+
 with tempfile.TemporaryDirectory() as tmp:
     tmp_path = Path(tmp)
     fake_runtime = tmp_path / "fake_swarm_rt.py"

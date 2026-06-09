@@ -86,7 +86,13 @@ jobs:
               ".claude/plugins",
               "codex_home",
               "swarm_discussion_skill_dir",
+              "swarm_discussion_plugin_root",
+              "swarm_runtime_wrapper",
+              "adapter-smoke",
+              "validate-host-step",
+              "host-step",
               ".codex",
+              ".tmp/marketplaces",
           )
           for host, needles in runtime_forbidden.items():
               root = Path(f"plugins/{host}/skills/swarm-discussion")

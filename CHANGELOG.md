@@ -3,6 +3,15 @@
 All notable changes to swarm-discussion. Versioning is SemVer; the on-disk data contract is versioned
 separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each plugin bundle).
 
+## [0.1.13] - 2026-06-10 - Codex runtime preflight in skill (Codex 0.1.8)
+
+- Codex `SKILL.md` now runs the bundled runtime wrapper `doctor --smoke-fixture` before discussion work starts,
+  so the vendored runtime is part of the real skill execution path.
+- Codex skill path discovery now includes marketplace-installed plugin roots under
+  `$CODEX_HOME/.tmp/marketplaces`, matching clean-install plugin list output.
+- Added a final runtime smoke gate instruction for runs that produce runtime transport packet artifacts.
+- Bumped the Codex bundle to `0.1.8`.
+
 ## [0.1.12] - 2026-06-10 - Codex bundled fixture smoke (Codex 0.1.7)
 
 - Added a bundled minimal runtime fixture under `plugins/codex/runtime/fixtures/minimal-v2`.
