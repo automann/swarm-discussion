@@ -3,9 +3,9 @@
 All notable changes to swarm-discussion. Versioning is SemVer; the on-disk data contract is versioned
 separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each plugin bundle).
 
-## [Unreleased] - Codex runtime wrapper skeleton
+## [0.1.11] - 2026-06-10 - Codex bundled runtime bridge (Codex 0.1.6)
 
-- Added an inert Codex plugin-side runtime wrapper skeleton under `plugins/codex/runtime/`. It resolves a
+- Added a Codex plugin-side runtime wrapper under `plugins/codex/runtime/`. It resolves a
   compatible v2 runtime CLI, verifies `runtime-contract`, and delegates `adapter-smoke` / `validate-loop`
   without copying prompt, fan-in, WAL, trace, or evidence logic into the plugin.
 - Vendored the v2 runtime package into the Codex plugin root so production installs can use a version-coupled
@@ -13,6 +13,7 @@ separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each 
 - Added a Codex wrapper migration plan documenting the staged path from legacy bundled-helper orchestration to
   a runtime-backed plugin flow.
 - Extended conformance coverage so the wrapper is exercised against a fake compatible runtime.
+- Bumped the Codex bundle to `0.1.6`.
 
 ## [0.1.10] - 2026-06-08 - Codex bundle adapter hardening (Codex 0.1.5)
 
