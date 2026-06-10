@@ -15,6 +15,8 @@ separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each 
   clean-install wrapper smoke back to runtime ownership of prompt-build, fan-in collection, and WAL.
 - Synced the public README and Codex wrapper migration plan with the completed `0.1.11` runtime-backed default
   path, and added conformance guards against stale bundled-helper wording.
+- Recorded the installer runtime-awareness closeout: installer `doctor` / `install` / `repair` now validate
+  the versioned Codex plugin cache wrapper path before treating the install as healthy.
 - Bumped the Codex bundle to `0.1.11`.
 
 ## [0.1.15] - 2026-06-10 - Codex runtime-owned transport artifacts (Codex 0.1.10)

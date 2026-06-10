@@ -114,19 +114,30 @@ Evidence:
 
 ### P5: Installer Runtime Awareness
 
-The wrapper installer currently focuses on plugin install and custom-agent
-registration. The next release-readiness step is to make installer `doctor`,
-`install`, and `repair` aware of the bundled runtime smoke gates without
-publishing prematurely.
+Status: complete in `swarm-discussion-installer` `0.1.3` source, not yet
+published.
 
-Candidate acceptance:
+The wrapper installer now treats Codex's versioned plugin cache as the installed
+plugin root:
 
-- `doctor` reports the installed plugin version, wrapper path, and
-  `doctor --smoke-fixture` outcome.
-- `install --verify-spawn` can optionally run the installed-wrapper smoke after
-  registering `swarm-expert`.
-- `repair` can detect stale custom-agent registration and stale plugin cache
-  versions.
+- `doctor` reports the active plugin-list version, listed marketplace path,
+  installed cache root, installed wrapper path, and `doctor --smoke-fixture`
+  outcome.
+- `install` / `repair` copy `agents/swarm-expert.toml` from
+  `CODEX_HOME/plugins/cache/swarm-discussion/swarm-discussion/<version>/`
+  before running the same doctor gate; `--verify-spawn` still adds the opt-in
+  real Codex spawn smoke after registration.
+- `repair` detects stale custom-agent registration through the existing
+  overwrite policy, and `doctor` warns on stale cache versions beside the active
+  cache while failing when the active cache root is missing.
+
+Evidence:
+
+- `npm test` in `/Users/syfq/dev/harness/swarm-discussion-installer`: 31/31
+  passed.
+- Isolated `CODEX_HOME` smoke ran `install --project`, `doctor`, and
+  `uninstall --project --all`; install copied from the `0.1.11` cache root and
+  doctor validated the cache wrapper fixture smoke.
 
 ### P6: Runtime/Plugin Drift Guard
 
