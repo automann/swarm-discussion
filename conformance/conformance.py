@@ -284,6 +284,7 @@ if bundled_fixture_smoke.returncode == 0:
     )
 
 codex_skill_text = (REPO / "plugins/codex/skills/swarm-discussion/SKILL.md").read_text()
+readme_text = (REPO / "README.md").read_text()
 check(
     "$CODEX_HOME/.tmp/marketplaces" in codex_skill_text,
     "codex skill lookup covers marketplace-installed plugin roots",
@@ -338,6 +339,18 @@ check(
 check(
     "protocol/collect.py" not in codex_skill_text,
     "codex skill natural entry does not route through legacy protocol collect helper",
+)
+check(
+    "still uses the stable bundled-helper flow" not in readme_text,
+    "README no longer claims Codex uses the legacy bundled-helper flow",
+)
+check(
+    "runtime-backed path is the default" in readme_text,
+    "README documents Codex runtime-backed path as default",
+)
+check(
+    "CODEX-RUNTIME-FLOW-COMPLETION-AUDIT.md" in readme_text,
+    "README links the Codex runtime completion audit",
 )
 for primitive in (
     "prompt-build",

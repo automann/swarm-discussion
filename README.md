@@ -228,12 +228,12 @@ python3 .../skills/swarm-discussion/protocol/validate_round.py .swarm/discussion
 ## How it works (under the hood)
 
 The orchestrator runs on your main thread and coordinates ephemeral persona subagents over a **shared on-disk
-write-ahead log** — a *blackboard*, not peer-to-peer messaging. It mints durable message IDs (so a resume
-never restarts numbering), windows each persona's view of the log (you always see your own history in full;
-peers are summarized past a budget), and runs a **provenance gate** — a recorded "I changed my mind because
-of `r1-msg-006`" must cite a message that persona was actually shown. The discussion *content* differs by
-host; the *structure* (ID chains, argument graph, round schema) is identical across both — verified by the
-bundled cross-adapter conformance test (`python3 conformance/conformance.py`).
+write-ahead log** — a *blackboard*, not peer-to-peer messaging. The runtime path mints durable message IDs
+(so a resume never restarts numbering), windows each persona's view of the log (you always see your own
+history in full; peers are summarized past a budget), and runs a **provenance gate** — a recorded "I changed
+my mind because of `r1-msg-006`" must cite a message that persona was actually shown. The discussion
+*content* differs by host; the *structure* (ID chains, argument graph, round schema) is identical across both
+— verified by the bundled cross-adapter conformance test (`python3 conformance/conformance.py`).
 
 It ships **no server** ("native blackboard").
 
@@ -255,14 +255,22 @@ It ships **no server** ("native blackboard").
 plugins/claude/                   # Claude Code plugin (skill + /swarm-discussion command)
 plugins/codex/                    # Codex plugin (skill + swarm-expert agent)
 plugins/codex/runtime/            # vendored v2 runtime CLI + plugin wrapper bridge
-conformance/                      # cross-bundle conformance test
+conformance/                      # cross-bundle and runtime-flow conformance gates
 ```
 
 Both bundles vendor the shared `protocol/` core; it is a vendored build artifact — don't edit it here.
 
-The Codex package also contains a vendored v2 runtime bridge under `plugins/codex/runtime/`. The current skill
-still uses the stable bundled-helper flow, but the wrapper can already verify the bundled runtime contract and
-delegate adapter-facing smoke gates without copying runtime orchestration logic into `SKILL.md`.
+The Codex package also contains a vendored v2 runtime under `plugins/codex/runtime/`. In Codex 0.1.11, the
+runtime-backed path is the default: the skill runs `doctor --smoke-fixture` before persona work, uses
+`context-build` / `prompt-build` for persona prompts, records returned `agent_id` values and raw `wait_agent`
+batches through transport helpers, and uses runtime WAL commands for message IDs, checkpoints, and final
+round promotion. The root thread remains the thin host operator for Codex spawn/wait/close; prompt, fan-in,
+transport, WAL, trace, evidence, and loop-validation artifacts are runtime-owned.
+
+Release readiness for the Codex runtime path is tracked in `conformance/`: `runtime_flow_smoke.py` covers the
+deterministic wrapper flow, `LIVE-RUNTIME-FLOW-SMOKE.md` records the real `swarm-expert` host-boundary run,
+`INSTALLED-RUNTIME-WRAPPER-SMOKE.md` records clean-install wrapper validation, and
+`CODEX-RUNTIME-FLOW-COMPLETION-AUDIT.md` ties those gates back to the runtime-backed entry contract.
 
 ## Credits
 

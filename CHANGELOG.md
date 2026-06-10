@@ -13,6 +13,8 @@ separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each 
 - Refreshed the installed-wrapper smoke audit against a clean `0.1.11` Codex plugin install.
 - Added a completion audit tying the natural skill entry, deterministic smoke, live subagent smoke, and
   clean-install wrapper smoke back to runtime ownership of prompt-build, fan-in collection, and WAL.
+- Synced the public README and Codex wrapper migration plan with the completed `0.1.11` runtime-backed default
+  path, and added conformance guards against stale bundled-helper wording.
 - Bumped the Codex bundle to `0.1.11`.
 
 ## [0.1.15] - 2026-06-10 - Codex runtime-owned transport artifacts (Codex 0.1.10)
