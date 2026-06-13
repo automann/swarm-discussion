@@ -40,7 +40,7 @@ in the runtime's `protocol/` and is documented there.
 
 - **v0.2.x** — this aggregator + per-host adapters around the shared runtime (current line).
 - **v0.1.x** — the previous single-repo, dual-host plugin (Claude + Codex bundled with a vendored runtime).
-  Preserved at the **`v0.1.x` tag and branch**; install instructions for that line live on the branch.
+  Preserved at the **`v0.1.16` tag** and the **`v0.1.x` branch**; install instructions for that line live on the branch.
 
 ## For maintainers
 

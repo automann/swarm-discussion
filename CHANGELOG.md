@@ -12,7 +12,7 @@ separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each 
   (`automann/swarm-discussion-claude` @ `v0.2.0`), which uses the orchestrator-as-sub-agent topology so
   discussion mechanics stay out of the parent context window.
 - Removed the bundled dual-host plugins, vendored runtime, and conformance harness from this repo. The
-  previous single-repo line is preserved at the `v0.1.x` tag and branch.
+  previous single-repo line is preserved at the `v0.1.16` tag and `v0.1.x` branch.
 - The Codex adapter (`swarm-discussion-codex`) will be listed here once it certifies.
 
 ## [0.1.16] - 2026-06-10 - Codex runtime-backed entry contract (Codex 0.1.11)

@@ -15,8 +15,8 @@ plus README / LICENSE / CHANGELOG / CI.
    at the adapter repo and pins `ref` (a release tag) or `sha`; only add or bump
    it after that release passes `conformance/certify_adapter.py` in the runtime
    repo.
-3. The v0.1 dual-host line is preserved at the `v0.1.x` tag and branch; do not
-   resurrect it onto `main`.
+3. The v0.1 dual-host line is preserved at the `v0.1.16` tag and `v0.1.x`
+   branch; do not resurrect it onto `main`.
 
 ## Push Cadence
 
