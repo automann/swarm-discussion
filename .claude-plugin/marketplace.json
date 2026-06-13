@@ -1,14 +1,24 @@
 {
+  "$schema": "https://code.claude.com/schemas/marketplace.json",
   "name": "swarm-discussion",
+  "description": "Aggregator marketplace for the swarm-discussion plugin family. Each host adapter lives in its own repository around the shared swarm-discussion-runtime; this repo only points at certified adapter releases.",
   "owner": {
     "name": "automann",
     "url": "https://github.com/automann/swarm-discussion"
   },
+  "version": "0.2.0",
   "plugins": [
     {
       "name": "swarm-discussion",
-      "source": "./plugins/claude",
-      "description": "Multi-expert swarm discussion for unsolved problems — designed tension, blind position declarations, steel-manning, an argument graph, and quality gates over a shared blackboard."
+      "source": {
+        "source": "github",
+        "repo": "automann/swarm-discussion-claude",
+        "ref": "v0.2.0"
+      },
+      "description": "Claude adapter: a parent agent spawns a swarm-orchestrator sub-agent that runs a multi-expert discussion over the vendored runtime and returns only the synthesis. Keeps discussion mechanics out of the parent context window.",
+      "homepage": "https://github.com/automann/swarm-discussion-claude",
+      "license": "MIT",
+      "keywords": ["discussion", "multi-agent", "architecture", "decision-making", "review", "subagents"]
     }
   ]
 }

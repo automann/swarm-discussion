@@ -3,6 +3,18 @@
 All notable changes to swarm-discussion. Versioning is SemVer; the on-disk data contract is versioned
 separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each plugin bundle).
 
+## [0.2.0] - 2026-06-11 - Thin aggregator + adapter split
+
+- swarm-discussion is now a thin aggregator marketplace. Protocol semantics, runtime mechanics, schemas, and
+  the certification gates live in `swarm-discussion-runtime`; each host adapter is its own repo that vendors
+  the runtime at a pinned SHA.
+- `.claude-plugin/marketplace.json` points at the certified Claude adapter release
+  (`automann/swarm-discussion-claude` @ `v0.2.0`), which uses the orchestrator-as-sub-agent topology so
+  discussion mechanics stay out of the parent context window.
+- Removed the bundled dual-host plugins, vendored runtime, and conformance harness from this repo. The
+  previous single-repo line is preserved at the `v0.1.x` tag and branch.
+- The Codex adapter (`swarm-discussion-codex`) will be listed here once it certifies.
+
 ## [0.1.16] - 2026-06-10 - Codex runtime-backed entry contract (Codex 0.1.11)
 
 - Codex `SKILL.md` now declares the runtime-backed path as the default entry contract: the root thread may
