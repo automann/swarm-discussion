@@ -3,6 +3,15 @@
 All notable changes to swarm-discussion. Versioning is SemVer; the on-disk data contract is versioned
 separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each plugin bundle).
 
+## [0.2.1] - 2026-06-19 - Ship runtime fixes (Codex-found)
+
+- Pin the Claude adapter at `v0.2.1`, which vendors runtime `93e99d1`:
+  - Stable artifact byte total — `build_trace`/`build_evidence` are now idempotent (trace/evidence/metrics
+    agree), and `validate-loop` catches stale trace/evidence anchors.
+  - Command surface converged (`persona-plan` removed; `planned_commands()` == CLI parser == contract,
+    pinned by a drift test).
+- Internal correctness + audit-integrity fixes only; no end-user behavior change.
+
 ## [0.2.0] - 2026-06-11 - Thin aggregator + adapter split
 
 - swarm-discussion is now a thin aggregator marketplace. Protocol semantics, runtime mechanics, schemas, and
