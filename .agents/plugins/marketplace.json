@@ -12,7 +12,7 @@
       "source": {
         "source": "url",
         "url": "https://github.com/automann/swarm-discussion-codex.git",
-        "sha": "06395bdc71b01957b8877972271bc46595ca95db"
+        "ref": "v0.2.2"
       },
       "policy": {
         "installation": "AVAILABLE",

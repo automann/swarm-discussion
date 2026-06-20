@@ -6,7 +6,7 @@ separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each 
 ## [0.2.2] - 2026-06-21 - Add Codex root plugin marketplace entry
 
 - Add `.agents/plugins/marketplace.json` for Codex, pointing at
-  `automann/swarm-discussion-codex` commit `06395bdc71b01957b8877972271bc46595ca95db`.
+  `automann/swarm-discussion-codex` release tag `v0.2.2`.
 - Update README install instructions for Codex while preserving this repository
   as a thin aggregator with no runtime or plugin payload code.
 - Extend CI marketplace validation to cover both Claude and Codex host

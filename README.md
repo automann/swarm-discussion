@@ -37,8 +37,8 @@ codex plugin add swarm-discussion --marketplace swarm-discussion
 ```
 
 The Codex marketplace entry points at the root plugin repo
-`automann/swarm-discussion-codex`, pinned to the certified adapter commit
-`06395bdc71b01957b8877972271bc46595ca95db`.
+`automann/swarm-discussion-codex`, pinned to the certified adapter release
+tag `v0.2.2`.
 
 ## Why it works
 
