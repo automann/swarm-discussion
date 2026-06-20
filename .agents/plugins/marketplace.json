@@ -1,0 +1,31 @@
+{
+  "name": "swarm-discussion",
+  "description": "Codex marketplace for the swarm-discussion plugin family. Each host adapter lives in its own repository around the shared swarm-discussion-runtime; this repo only points at certified adapter releases.",
+  "owner": {
+    "name": "automann",
+    "url": "https://github.com/automann/swarm-discussion"
+  },
+  "version": "0.2.2",
+  "plugins": [
+    {
+      "name": "swarm-discussion",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/automann/swarm-discussion-codex.git",
+        "sha": "06395bdc71b01957b8877972271bc46595ca95db"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools",
+      "interface": {
+        "displayName": "Swarm Discussion for Codex"
+      },
+      "description": "Codex adapter: a thin parent skill creates or wakes a dedicated coordinator thread, while the vendored runtime owns prompt construction, transport capture, WAL mutation, validation, and retained artifacts.",
+      "homepage": "https://github.com/automann/swarm-discussion-codex",
+      "license": "MIT",
+      "keywords": ["discussion", "multi-agent", "architecture", "decision-making", "review", "codex"]
+    }
+  ]
+}

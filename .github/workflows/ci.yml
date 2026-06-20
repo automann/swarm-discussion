@@ -13,39 +13,63 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
-      - name: Validate marketplace.json
+      - name: Validate marketplace manifests
         run: |
           python3 - <<'PY'
           import json
           from pathlib import Path
 
-          manifest = json.loads(Path(".claude-plugin/marketplace.json").read_text())
-          assert manifest.get("name"), "marketplace name required"
-          owner = manifest.get("owner")
-          assert isinstance(owner, dict) and owner.get("name"), "owner.name required"
-          plugins = manifest.get("plugins")
-          assert isinstance(plugins, list) and plugins, "plugins[] required and non-empty"
+          manifests = [
+              Path(".claude-plugin/marketplace.json"),
+              Path(".agents/plugins/marketplace.json"),
+          ]
 
           allowed_sources = {"github", "url", "git-subdir", "local"}
-          for plugin in plugins:
-              name = plugin.get("name")
-              assert name, "plugin entry needs a name"
-              source = plugin.get("source")
-              assert source, f"{name}: source required"
-              if isinstance(source, dict):
-                  kind = source.get("source")
-                  assert kind in allowed_sources, f"{name}: bad source type {kind!r}"
-                  if kind == "github":
-                      assert "/" in source.get("repo", ""), f"{name}: github repo must be owner/name"
-                      assert source.get("ref") or source.get("sha"), f"{name}: pin a ref or sha"
-              elif isinstance(source, str):
-                  assert ".." not in source, f"{name}: source path must not traverse"
-          print(f"marketplace OK: {len(plugins)} plugin(s)")
+          for manifest_path in manifests:
+              manifest = json.loads(manifest_path.read_text())
+              assert manifest.get("name"), f"{manifest_path}: marketplace name required"
+              owner = manifest.get("owner")
+              assert isinstance(owner, dict) and owner.get("name"), f"{manifest_path}: owner.name required"
+              plugins = manifest.get("plugins")
+              assert isinstance(plugins, list) and plugins, f"{manifest_path}: plugins[] required and non-empty"
+
+              for plugin in plugins:
+                  name = plugin.get("name")
+                  assert name, f"{manifest_path}: plugin entry needs a name"
+                  source = plugin.get("source")
+                  assert source, f"{manifest_path}: {name}: source required"
+                  if isinstance(source, dict):
+                      kind = source.get("source")
+                      assert kind in allowed_sources, f"{manifest_path}: {name}: bad source type {kind!r}"
+                      if kind == "github":
+                          assert "/" in source.get("repo", ""), f"{manifest_path}: {name}: github repo must be owner/name"
+                          assert source.get("ref") or source.get("sha"), f"{manifest_path}: {name}: pin a ref or sha"
+                      if kind == "url":
+                          assert source.get("url", "").startswith("https://"), f"{manifest_path}: {name}: url source must be https"
+                          assert source.get("ref") or source.get("sha"), f"{manifest_path}: {name}: pin a ref or sha"
+                      if kind == "git-subdir":
+                          assert source.get("url") or source.get("repo"), f"{manifest_path}: {name}: git-subdir needs url or repo"
+                          assert source.get("subdir"), f"{manifest_path}: {name}: git-subdir needs subdir"
+                          assert source.get("ref") or source.get("sha"), f"{manifest_path}: {name}: pin a ref or sha"
+                  elif isinstance(source, str):
+                      assert ".." not in source, f"{manifest_path}: {name}: source path must not traverse"
+              print(f"{manifest_path}: marketplace OK: {len(plugins)} plugin(s)")
           PY
 
       - name: No leftover plugin/runtime code (thin aggregator)
         run: |
-          for path in plugins runtime conformance .agents; do
-            if [ -e "$path" ]; then echo "unexpected directory on the aggregator: $path"; exit 1; fi
+          for candidate in plugins runtime conformance; do
+            if git ls-files -- "$candidate" | grep -q .; then
+              echo "unexpected tracked path on the aggregator: $candidate"
+              git ls-files -- "$candidate"
+              exit 1
+            fi
           done
+          allowed_agents=".agents/plugins/marketplace.json"
+          unexpected="$(git ls-files .agents | grep -v "^$allowed_agents$" || true)"
+          if [ -n "$unexpected" ]; then
+            echo "unexpected tracked files under .agents:"
+            echo "$unexpected"
+            exit 1
+          fi
           echo "aggregator is thin"

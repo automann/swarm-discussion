@@ -3,6 +3,15 @@
 All notable changes to swarm-discussion. Versioning is SemVer; the on-disk data contract is versioned
 separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each plugin bundle).
 
+## [0.2.2] - 2026-06-21 - Add Codex root plugin marketplace entry
+
+- Add `.agents/plugins/marketplace.json` for Codex, pointing at
+  `automann/swarm-discussion-codex` commit `06395bdc71b01957b8877972271bc46595ca95db`.
+- Update README install instructions for Codex while preserving this repository
+  as a thin aggregator with no runtime or plugin payload code.
+- Extend CI marketplace validation to cover both Claude and Codex host
+  manifests and to allow only the Codex marketplace manifest under `.agents/`.
+
 ## [0.2.1] - 2026-06-19 - Ship runtime fixes (Codex-found)
 
 - Pin the Claude adapter at `v0.2.1`, which vendors runtime `93e99d1`:

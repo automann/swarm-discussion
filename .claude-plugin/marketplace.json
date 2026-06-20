@@ -6,7 +6,7 @@
     "name": "automann",
     "url": "https://github.com/automann/swarm-discussion"
   },
-  "version": "0.2.1",
+  "version": "0.2.2",
   "plugins": [
     {
       "name": "swarm-discussion",

@@ -13,7 +13,8 @@ project is split:
 - **host adapters**, one repo per coding agent, each a thin shell that vendors the runtime at a pinned SHA:
   - **[swarm-discussion-claude](https://github.com/automann/swarm-discussion-claude)** — the Claude Code
     adapter (orchestrator-as-sub-agent topology).
-  - **swarm-discussion-codex** — the Codex adapter *(in progress)*.
+  - **[swarm-discussion-codex](https://github.com/automann/swarm-discussion-codex)** — the Codex adapter
+    (dedicated coordinator-thread topology).
 - **this repo (`swarm-discussion`)** — a thin marketplace that points at **certified adapter releases**. It
   contains no protocol, runtime, or plugin code.
 
@@ -27,6 +28,17 @@ project is split:
 Then invoke the skill (ask for a swarm discussion, or `/swarm-discussion`): the parent agent spawns a
 `swarm-orchestrator` sub-agent that runs the whole discussion in its own context and returns only the
 synthesis — discussion mechanics never enter your context window.
+
+## Install (Codex)
+
+```bash
+codex plugin marketplace add automann/swarm-discussion
+codex plugin add swarm-discussion --marketplace swarm-discussion
+```
+
+The Codex marketplace entry points at the root plugin repo
+`automann/swarm-discussion-codex`, pinned to the certified adapter commit
+`06395bdc71b01957b8877972271bc46595ca95db`.
 
 ## Why it works
 
@@ -44,9 +56,7 @@ in the runtime's `protocol/` and is documented there.
 
 ## For maintainers
 
-This repo only lists certified adapter releases (see each adapter's certification via the runtime repo's
-`conformance/certify_adapter.py`). To add or bump an adapter, edit `.claude-plugin/marketplace.json` to point
-its `source` at the adapter repo and pin `ref` to a certified release tag. The Codex adapter will be added
-here once it certifies.
+This repo only lists certified adapter releases. To add or bump an adapter, edit the relevant host marketplace
+manifest to point its `source` at the adapter repo and pin `ref` or `sha` to a certified release.
 
 License: MIT (see `LICENSE`).

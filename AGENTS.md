@@ -2,12 +2,13 @@
 
 This repository is the **thin aggregator marketplace** for the swarm-discussion
 plugin family. As of v0.2 it contains no protocol, runtime, or plugin code —
-only `.claude-plugin/marketplace.json` pointing at certified adapter releases,
-plus README / LICENSE / CHANGELOG / CI.
+only host marketplace manifests pointing at certified adapter releases, plus
+README / LICENSE / CHANGELOG / CI.
 
 ## Principles
 
-1. Keep it thin. The only substantive file is `.claude-plugin/marketplace.json`.
+1. Keep it thin. The substantive host marketplace manifests are
+   `.claude-plugin/marketplace.json` and `.agents/plugins/marketplace.json`.
    Do NOT add plugin bundles, runtime code, protocol docs, or vendored runtimes
    here — those live in `swarm-discussion-runtime` and the per-host adapter
    repos.
@@ -26,6 +27,8 @@ this repo, push the new commits to `origin/main` without asking first.
 ## Release checklist
 
 - `python3 -c` marketplace validation passes (the CI job), and
-  `claude plugin validate .` passes locally.
+  `claude plugin validate .` passes locally for the Claude manifest.
+- A Codex marketplace install smoke from `.agents/plugins/marketplace.json`
+  resolves and installs the pinned Codex adapter entry.
 - Each listed adapter `ref`/`sha` corresponds to a certified release.
 - README install instructions and CHANGELOG are updated for the version bump.
