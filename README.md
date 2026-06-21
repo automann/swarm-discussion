@@ -4,7 +4,7 @@
 > with designed tension, blind position-taking, mandatory steel-manning, and a cited argument graph — then
 > hand you a traceable synthesis.
 
-This repository is the **aggregator marketplace** for the swarm-discussion plugin family. As of **v0.2** the
+This repository is the **aggregator marketplace** for the swarm-discussion plugin family. As of **v0.3** the
 project is split:
 
 - **[swarm-discussion-runtime](https://github.com/automann/swarm-discussion-runtime)** — the host-agnostic
@@ -14,7 +14,7 @@ project is split:
   - **[swarm-discussion-claude](https://github.com/automann/swarm-discussion-claude)** — the Claude Code
     adapter (orchestrator-as-sub-agent topology).
   - **[swarm-discussion-codex](https://github.com/automann/swarm-discussion-codex)** — the Codex adapter
-    (dedicated coordinator-thread topology).
+    (parent-projected custom-agent experts plus a dedicated coordinator-thread topology).
 - **this repo (`swarm-discussion`)** — a thin marketplace that points at **certified adapter releases**. It
   contains no protocol, runtime, or plugin code.
 
@@ -38,7 +38,7 @@ codex plugin add swarm-discussion --marketplace swarm-discussion
 
 The Codex marketplace entry points at the root plugin repo
 `automann/swarm-discussion-codex`, pinned to the certified adapter release
-tag `v0.2.2`.
+tag `v0.3.0`.
 
 ## Why it works
 
@@ -50,7 +50,9 @@ in the runtime's `protocol/` and is documented there.
 
 ## Versions
 
-- **v0.2.x** — this aggregator + per-host adapters around the shared runtime (current line).
+- **v0.3.x** — this aggregator + per-host adapters around the shared runtime, with dynamic custom-agent
+  projection certification on both host adapters (current line).
+- **v0.2.x** — the first thin-aggregator line around separately certified per-host adapters.
 - **v0.1.x** — the previous single-repo, dual-host plugin (Claude + Codex bundled with a vendored runtime).
   Preserved at the **`v0.1.16` tag** and the **`v0.1.x` branch**; install instructions for that line live on the branch.
 
