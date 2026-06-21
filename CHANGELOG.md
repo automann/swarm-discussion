@@ -3,6 +3,17 @@
 All notable changes to swarm-discussion. Versioning is SemVer; the on-disk data contract is versioned
 separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each plugin bundle).
 
+## [0.3.0] - 2026-06-21 - Claude adapter v0.3.0 (dynamic custom-agent topology)
+
+- Pin the Claude adapter at `v0.3.0`: the parent projects per-topic run-scoped
+  custom expert agents and dispatches a `swarm-coordinator` background session
+  that runs the discussion and spawns them, with runtime-owned projection
+  provenance (vendored runtime `04f4974`). Certified with
+  `certify_adapter.py --require-projection` against a real coordinator-driven
+  projected discussion (5/5) plus a zero-residue cleanup check.
+- The Codex adapter (`.agents/plugins/marketplace.json`) stays on its current pin
+  until it re-vendors at `04f4974` and certifies `--require-projection`.
+
 ## [0.2.2] - 2026-06-21 - Add Codex root plugin marketplace entry
 
 - Add `.agents/plugins/marketplace.json` for Codex, pointing at
