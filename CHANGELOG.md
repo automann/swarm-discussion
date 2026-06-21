@@ -3,7 +3,7 @@
 All notable changes to swarm-discussion. Versioning is SemVer; the on-disk data contract is versioned
 separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each plugin bundle).
 
-## [Unreleased] - Codex adapter v0.3.0 follow-through
+## [0.3.1] - 2026-06-22 - Codex adapter v0.3.0 follow-through
 
 - Pin the Codex marketplace entry (`.agents/plugins/marketplace.json`) at
   `automann/swarm-discussion-codex` release tag `v0.3.0`, which vendors runtime
