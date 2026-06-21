@@ -12,6 +12,8 @@ separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each 
 - Update README Codex install notes to point at the certified Codex adapter
   `v0.3.0` root plugin release while keeping this repository as a thin
   aggregator with no runtime or plugin payload code.
+- Align both host marketplace manifests (`.claude-plugin/marketplace.json` and
+  `.agents/plugins/marketplace.json`) to version `0.3.1`.
 
 ## [0.3.0] - 2026-06-21 - Claude adapter v0.3.0 (dynamic custom-agent topology)
 
