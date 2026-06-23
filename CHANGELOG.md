@@ -3,6 +3,17 @@
 All notable changes to swarm-discussion. Versioning is SemVer; the on-disk data contract is versioned
 separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each plugin bundle).
 
+## [0.4.0] - 2026-06-24 - mode × stressPolicy debate-depth (both adapters)
+
+- Both host adapters now orchestrate the ADR 0002 `mode` × `stressPolicy` bounded
+  debate loop over runtime `c843931` and certify engineered disagreement with
+  `certify_adapter.py --require-projection --require-stress`:
+  - Claude (`.claude-plugin/marketplace.json`) pinned at `v0.4.0` — certified on a
+    live `claude --bg` coordinator-driven `deep`+`required` stress discussion.
+  - Codex (`.agents/plugins/marketplace.json`) pinned at `v0.4.0` — certified on a
+    retained `deep`+`required` projected stress smoke.
+- Bump both host marketplace manifests to version `0.4.0`.
+
 ## [0.3.1] - 2026-06-22 - Codex adapter v0.3.0 follow-through
 
 - Pin the Codex marketplace entry (`.agents/plugins/marketplace.json`) at
