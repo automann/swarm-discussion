@@ -3,6 +3,16 @@
 All notable changes to swarm-discussion. Versioning is SemVer; the on-disk data contract is versioned
 separately as `schemaVersion` (see the vendored `protocol/SCHEMA.md` under each plugin bundle).
 
+## [0.4.1] - 2026-06-24 - flag honoring + usage docs
+
+- Both adapter skills now honor explicit `--mode` / `--stressPolicy` invocation flags
+  (validated against the enums) over inference; live-verified on two non-default probes.
+- Documented the combined `mode` × `stressPolicy` usage guide (invocation form + example
+  matrix) and a `stressPolicy` Modes subsection across the aggregator + both adapter READMEs.
+- Aggregator: clone the Claude adapter over HTTPS (`url` source, not `github`/SSH) so install
+  works without SSH keys / behind SSH-blocking proxies. Re-pin both adapters to `v0.4.1`;
+  same vendored runtime `c843931`.
+
 ## [0.4.0] - 2026-06-24 - mode × stressPolicy debate-depth (both adapters)
 
 - Both host adapters now orchestrate the ADR 0002 `mode` × `stressPolicy` bounded
