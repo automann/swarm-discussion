@@ -33,7 +33,7 @@ codex plugin add swarm-discussion --marketplace swarm-discussion
 ```
 
 The Codex entry points at the root plugin repo `automann/swarm-discussion-codex`, pinned to the certified
-release tag `v0.3.0`.
+release tag `v0.4.1`.
 
 ## Usage
 
